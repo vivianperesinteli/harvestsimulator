@@ -6,19 +6,58 @@ Web-based agricultural decision support tool for soybean producers in Mato Gross
 
 ---
 
+## Live Demo
+
+| Service | URL |
+|---|---|
+| **App (Streamlit)** | https://empathetic-passion-production.up.railway.app |
+| **API (FastAPI)** | https://harvestsimulator-production.up.railway.app |
+
+Login with: **Username:** `demo` · **Password:** `demo123`
+
+---
+
 ## Features
 
 | Feature | Description |
 |---|---|
 | Payoff Matrix | 27 management combinations × 3 climate scenarios (sc/ha) |
 | 6 Decision Criteria | Bayes EV, Wald, Laplace, Hurwicz, Maximax, Savage |
-| Monte Carlo | 1,000–5,000 iterations, configurable triangular distributions |
+| Monte Carlo | 1,000–10,000 iterations, configurable triangular distributions |
 | Risk Analysis | P(yield < threshold), P5/P95, standard deviation |
 | Tornado Chart | Spearman correlation per stochastic variable |
 | Alternative Comparison | Your selection vs. optimal path (Bayes EV) |
 | Upgrade Potential | Impact of switching cultivar, seed treatment, or planter |
 | Export | PDF (full report) + CSV per recommendation |
 | Interactive Explainer | 10-step methodology with formulas and charts |
+
+---
+
+## Monte Carlo — How it works
+
+The simulator treats three key variables as probability distributions rather than fixed values, running thousands of scenarios to produce a distribution of possible outcomes.
+
+### Stochastic inputs
+
+| Variable | Distribution | Range |
+|---|---|---|
+| D2 · Cultivar | Triangular(min, mode, max) | default: −8, 0, +6 sc/ha |
+| D3 · Seed Treatment | Triangular(min, mode, max) | default: −5, 0, +3 sc/ha |
+| D6 · Planter | Triangular(min, mode, max) | default: −4, 0, +3 sc/ha |
+| Rainfall R3–R6 | Discrete by P(rain\|ENSO) | Dry / Normal / Wet |
+
+### How to configure
+
+In the **How We Calculate** page, set the number of iterations (1,000–10,000) and the risk threshold (sc/ha). The distribution parameters (min, mode, max) for each variable can be adjusted in the expanders. Click **Run Monte Carlo** to execute.
+
+### How to read the output
+
+- **Mean** — average simulated yield across all iterations
+- **Std Dev** — spread of the distribution; higher = more uncertainty
+- **P5** — in 95% of simulations, yield exceeded this value (worst-case bound)
+- **P95** — in 95% of simulations, yield stayed below this value (best-case bound)
+- **P(below threshold)** — probability the yield falls below the risk threshold you set
+- **Tornado chart** — shows which variable drives the most output variance (Spearman correlation); the longer the bar, the more that variable matters
 
 ---
 
@@ -120,7 +159,7 @@ simulator/
 - **Regional reference:** 60 sc/ha — historical average yield for MT
 - **Your field's starting point:** baseline adjusted by field context
 - **Expected yield:** probability-weighted average across climate scenarios (Bayes EV)
-- **90% interval:** between P5 and P95 of 2,000 Monte Carlo simulations
+- **90% interval:** between P5 and P95 of the Monte Carlo simulations
 - **Risk:** probability of falling below the configurable threshold (default: regional reference)
 
 ---
