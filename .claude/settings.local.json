@@ -1,0 +1,23 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\thoma\\\\Documents\\\\Projeto Bayer\\\\g02\\\\Sprint 3\\\\simulator\" -Recurse -Force)",
+      "Bash(Select-Object FullName, PSIsContainer)",
+      "Bash(ConvertTo-Json)",
+      "Read(//c/Users/thoma/Downloads/**)",
+      "Bash(python -c ' *)",
+      "Bash(python -m uvicorn backend.main:app --port 8000 --timeout-keep-alive 2)",
+      "Bash(python -c \"import requests; r=requests.get\\('http://localhost:8000/health'\\); print\\(r.json\\(\\)\\)\")",
+      "Bash(python *)",
+      "Bash(taskkill *)",
+      "PowerShell(Stop-Process *)",
+      "Bash(New-Item -ItemType Directory -Force \"C:\\\\Users\\\\thoma\\\\Documents\\\\Projeto Bayer\\\\g02\\\\Sprint 3\\\\simulator\\\\tests\")",
+      "Bash(Out-Null)",
+      "Skill(run)",
+      "Bash(python3 -m venv .venv)",
+      "Bash(.venv/bin/pip install *)",
+      "Bash(.venv/bin/uvicorn backend.main:app --port 8000)",
+      "Bash(curl -s http://localhost:8000/health)"
+    ]
+  }
+}
