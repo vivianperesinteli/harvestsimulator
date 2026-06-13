@@ -1,89 +1,89 @@
-# Simulador de Safra — Soja Verão, Mato Grosso
+# Harvest Simulator — Soy, Mato Grosso
 
 **Bayer CropScience × Inteli · Module 6 · Group 2**
 
-Ferramenta web de apoio à decisão agrícola para produtores de soja no Mato Grosso. O produtor informa as condições do talhão e suas decisões de manejo; o simulador calcula a produtividade esperada em cada cenário climático, aplica 6 critérios econômicos de decisão e estima o intervalo de confiança via simulação de Monte Carlo.
+Web-based agricultural decision support tool for soybean producers in Mato Grosso. The producer enters field conditions and management decisions; the simulator calculates expected yield for each climate scenario, applies 6 economic decision criteria, and estimates the confidence interval via Monte Carlo simulation.
 
 ---
 
-## Funcionalidades
+## Features
 
-| Funcionalidade | Descrição |
+| Feature | Description |
 |---|---|
-| Matriz de Payoff | 27 combinações de manejo × 3 cenários climáticos (sc/ha) |
-| 6 Critérios de Decisão | Bayes EV, Wald, Laplace, Hurwicz, Maximax, Savage |
-| Monte Carlo | 1.000–5.000 iterações, distribuições triangulares configuráveis |
-| Análise de Risco | P(yield < threshold), P5/P95, desvio padrão |
-| Tornado Chart | Correlação de Spearman por variável estocástica |
-| Comparação de Alternativas | Sua seleção vs. path ótimo (Bayes EV) |
-| Upgrade Potential | Impacto de trocar cultivar, TSI ou plantadeira |
-| Export | PDF (relatório completo) + CSV por recomendação |
-| Explainer interativo | 10 passos de metodologia com fórmulas e gráficos |
+| Payoff Matrix | 27 management combinations × 3 climate scenarios (sc/ha) |
+| 6 Decision Criteria | Bayes EV, Wald, Laplace, Hurwicz, Maximax, Savage |
+| Monte Carlo | 1,000–5,000 iterations, configurable triangular distributions |
+| Risk Analysis | P(yield < threshold), P5/P95, standard deviation |
+| Tornado Chart | Spearman correlation per stochastic variable |
+| Alternative Comparison | Your selection vs. optimal path (Bayes EV) |
+| Upgrade Potential | Impact of switching cultivar, seed treatment, or planter |
+| Export | PDF (full report) + CSV per recommendation |
+| Interactive Explainer | 10-step methodology with formulas and charts |
 
 ---
 
-## Pré-requisitos
+## Requirements
 
 - Python 3.11+
 - pip
 
 ---
 
-## Instalação e execução local
+## Local installation and setup
 
 ```bash
-# 1. Instalar dependências
+# 1. Install dependencies
 pip install -r requirements.txt
 
-# 2. Terminal 1 — backend FastAPI (porta 8000)
+# 2. Terminal 1 — FastAPI backend (port 8000)
 uvicorn backend.main:app --port 8000
 
-# 3. Terminal 2 — frontend Streamlit (porta 8501)
+# 3. Terminal 2 — Streamlit frontend (port 8501)
 streamlit run frontend/app.py
 ```
 
-Acesse `http://localhost:8501` e faça login com:
-- **Usuário:** `demo`
-- **Senha:** `demo123`
+Access `http://localhost:8501` and log in with:
+- **Username:** `demo`
+- **Password:** `demo123`
 
 ---
 
-## Variáveis de ambiente (produção)
+## Environment variables (production)
 
-| Variável | Padrão | Descrição |
+| Variable | Default | Description |
 |---|---|---|
-| `BACKEND_URL` | `http://localhost:8000` | URL do backend FastAPI |
-| `ALLOWED_ORIGINS` | `http://localhost:8501` | Origens CORS permitidas (separadas por vírgula) |
+| `BACKEND_URL` | `http://localhost:8000` | FastAPI backend URL |
+| `ALLOWED_ORIGINS` | `http://localhost:8501` | Allowed CORS origins (comma-separated) |
 
 ---
 
-## Estrutura do projeto
+## Project structure
 
 ```
 simulator/
 ├── backend/
 │   ├── main.py          # FastAPI — endpoints /health, /api/nodes, /api/simulate, /api/monte_carlo
-│   ├── engine.py        # Compute simulation: payoff matrix, critérios, upgrade potential
-│   ├── monte_carlo.py   # Motor MC: distribuições triangulares + tornado
-│   ├── models.py        # Pydantic models para request/response
-│   └── data.py          # Constantes: nós, ajustes, probabilidades de chuva
+│   ├── engine.py        # Compute simulation: payoff matrix, criteria, upgrade potential
+│   ├── monte_carlo.py   # MC engine: triangular distributions + tornado chart
+│   ├── models.py        # Pydantic models for request/response
+│   └── data.py          # Constants: nodes, adjustments, rainfall probabilities
 ├── frontend/
-│   ├── app.py           # Streamlit: autenticação + roteador + sidebar
-│   ├── auth.py          # Login/cadastro com PBKDF2-SHA256
-│   ├── api.py           # Cliente HTTP para o backend
-│   ├── styles.py        # CSS global (identidade visual)
-│   ├── navigation.py    # Roteador de páginas via session_state
+│   ├── app.py           # Streamlit: authentication + router + sidebar
+│   ├── auth.py          # Login/register with PBKDF2-SHA256
+│   ├── api.py           # HTTP client for the backend
+│   ├── styles.py        # Global CSS (visual identity)
+│   ├── navigation.py    # Page router via session_state
 │   └── views/
-│       ├── input.py         # 3 etapas: contexto → decisões → revisão
-│       ├── results.py       # Recomendações, matriz, critérios, export PDF/CSV
-│       ├── results_helpers.py  # Labels e textos compartilhados
-│       ├── results_pdf.py      # Gerador de PDF (fpdf2)
-│       ├── dashboard.py     # Gráficos: waterfall, radar, barras, sensibilidade
-│       ├── monte_carlo.py   # UI Monte Carlo com histograma e tornado
-│       ├── explainer.py     # Explainer interativo — 10 passos
-│       └── history.py       # Histórico de simulações da sessão
+│       ├── input.py         # 3 steps: context → decisions → review
+│       ├── results.py       # Recommendations, matrix, criteria, PDF/CSV export
+│       ├── results_helpers.py  # Shared labels and text
+│       ├── results_pdf.py      # PDF generator (fpdf2)
+│       ├── dashboard.py     # Charts: waterfall, radar, bar, sensitivity
+│       ├── monte_carlo.py   # Monte Carlo UI with histogram and tornado
+│       ├── explainer.py     # Interactive explainer — 10 steps
+│       └── history.py       # Session simulation history
 ├── data/
-│   └── users.json       # Usuários (gerado automaticamente)
+│   └── users.json       # Users (auto-generated)
 ├── tests/
 │   └── test_monte_carlo.py
 ├── requirements.txt
@@ -96,36 +96,36 @@ simulator/
 
 ## API
 
-| Método | Endpoint | Descrição |
+| Method | Endpoint | Description |
 |---|---|---|
-| GET | `/health` | Status do servidor |
-| GET | `/api/nodes` | Opções de todos os nós C1–C7 e D1–D6 |
-| POST | `/api/simulate` | Roda a simulação completa (payoff matrix + critérios + MC) |
-| POST | `/api/monte_carlo` | Monte Carlo com parâmetros configuráveis |
+| GET | `/health` | Server status |
+| GET | `/api/nodes` | Options for all nodes C1–C7 and D1–D6 |
+| POST | `/api/simulate` | Runs the full simulation (payoff matrix + criteria + MC) |
+| POST | `/api/monte_carlo` | Monte Carlo with configurable parameters |
 
 ---
 
-## Modelo
+## Model
 
-- **Escopo:** Soja Verão · Mato Grosso · Baseline = 60 sc/ha (CONAB 2023/24)
-- **Variáveis de contexto (C1–C7):** região, textura, pH, drenagem, aptidão, área, ENSO
-- **Variáveis de decisão (D1–D6):** janela de plantio, cultivar, TSI, densidade, manejo de doenças, plantadeira
-- **Cenários climáticos:** Seca, Normal, Úmida — probabilidades condicionais ao ENSO
-- **Variáveis estocásticas (MC):** D2 Triangular(−8,0,+6), D3 Triangular(−5,0,+3), D6 Triangular(−4,0,+3), Chuva R3–R6 discreta
-
----
-
-## Como ler os resultados
-
-- **Referência da região:** 60 sc/ha — produtividade média histórica MT
-- **Ponto de partida da sua lavoura:** baseline ajustado pelo contexto do campo
-- **Produtividade esperada:** média ponderada pelos cenários climáticos (Bayes EV)
-- **Intervalo 90%:** entre P5 e P95 das 2.000 simulações de Monte Carlo
-- **Risco:** probabilidade de ficar abaixo do threshold configurável (padrão: referência regional)
+- **Scope:** Soy · Mato Grosso · Baseline = 60 sc/ha (CONAB 2023/24)
+- **Context variables (C1–C7):** region, texture, pH, drainage, soil type, area, ENSO
+- **Decision variables (D1–D6):** planting window, cultivar, seed treatment, density, disease management, planter
+- **Climate scenarios:** Dry, Normal, Wet — conditional probabilities on ENSO
+- **Stochastic variables (MC):** D2 Triangular(−8, 0, +6), D3 Triangular(−5, 0, +3), D6 Triangular(−4, 0, +3), Rainfall R3–R6 discrete
 
 ---
 
-## Licença
+## How to read the results
 
-Projeto acadêmico — Inteli · Bayer CropScience.  
-Dados proprietários da Bayer não estão incluídos neste repositório.
+- **Regional reference:** 60 sc/ha — historical average yield for MT
+- **Your field's starting point:** baseline adjusted by field context
+- **Expected yield:** probability-weighted average across climate scenarios (Bayes EV)
+- **90% interval:** between P5 and P95 of 2,000 Monte Carlo simulations
+- **Risk:** probability of falling below the configurable threshold (default: regional reference)
+
+---
+
+## License
+
+Academic project — Inteli · Bayer CropScience.  
+Proprietary Bayer data is not included in this repository.

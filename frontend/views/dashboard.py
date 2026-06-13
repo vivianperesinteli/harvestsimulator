@@ -9,21 +9,21 @@ from frontend.navigation import go as navigate
 
 # Mapeamentos de labels curtos
 _C_LABELS = {
-    "c1_regiao":  "C1 · Região",
-    "c2_textura": "C2 · Textura",
+    "c1_regiao":  "C1 · Region",
+    "c2_textura": "C2 · Texture",
     "c3_ph":      "C3 · pH",
-    "c4_drenagem":"C4 · Drenagem",
-    "c5_aptidao": "C5 · Aptidão",
-    "c6_area":    "C6 · Área",
+    "c4_drenagem":"C4 · Drainage",
+    "c5_aptidao": "C5 · Aptitude",
+    "c6_area":    "C6 · Area",
     "c7_enso":    "C7 · ENSO",
 }
 _D_LABELS = {
-    "d1_janela":    "D1 · Janela",
+    "d1_janela":    "D1 · Window",
     "d2_cultivar":  "D2 · Cultivar",
     "d3_tsi":       "D3 · TSI",
-    "d4_densidade": "D4 · Densidade",
-    "d5_manejo":    "D5 · Manejo",
-    "d6_tecnologia":"D6 · Tecnologia",
+    "d4_densidade": "D4 · Density",
+    "d5_manejo":    "D5 · Management",
+    "d6_tecnologia":"D6 · Technology",
 }
 
 # Ajustes de cada nó — espelho de backend/data.py
@@ -52,8 +52,8 @@ def render() -> None:
     decisions = st.session_state.get("sim_decisions")
 
     if not result or not context or not decisions:
-        st.warning("Rode uma simulação primeiro.")
-        if st.button("← Ir para Simulação"):
+        st.warning("Run a simulation first.")
+        if st.button("← Go to Simulation"):
             navigate("input")
         return
 
@@ -66,7 +66,7 @@ def render() -> None:
     )
 
     st.markdown('<div class="page-title">Dashboard</div>', unsafe_allow_html=True)
-    st.markdown('<div class="page-subtitle">Decomposição visual do yield simulado</div>', unsafe_allow_html=True)
+    st.markdown('<div class="page-subtitle">Visual decomposition of simulated yield</div>', unsafe_allow_html=True)
     st.markdown("<br>", unsafe_allow_html=True)
 
     # ── Cards de resumo ───────────────────────────────────────────────────
@@ -81,11 +81,11 @@ def render() -> None:
 
     m1, m2, m3, m4, m5 = st.columns(5)
     for col, label, value, sub in [
-        (m1, "Baseline",        baseline,                    "sc/ha"),
-        (m2, "Ajuste Contexto", context_adj,                 "sc/ha (C1–C7)"),
-        (m3, "Ajuste Decisões", fixed_adj + variable_adj,    "sc/ha (D1–D6)"),
-        (m4, "EV Chuva",        round(ev_chuva, 2),          "sc/ha esperado"),
-        (m5, "EV Final",        ev_final,                    "sc/ha"),
+        (m1, "Baseline",         baseline,                    "sc/ha"),
+        (m2, "Context Adj.",     context_adj,                 "sc/ha (C1–C7)"),
+        (m3, "Decision Adj.",    fixed_adj + variable_adj,    "sc/ha (D1–D6)"),
+        (m4, "Rain EV",          round(ev_chuva, 2),          "expected sc/ha"),
+        (m5, "Final EV",         ev_final,                    "sc/ha"),
     ]:
         is_delta = label not in ("Baseline", "EV Final")
         color = "#2e7d32" if value > 0 else ("#c62828" if value < 0 else "#111")
@@ -101,8 +101,8 @@ def render() -> None:
     st.markdown("<br>", unsafe_allow_html=True)
 
     # ── Waterfall ─────────────────────────────────────────────────────────
-    st.markdown("### Decomposição do Yield — Waterfall")
-    st.caption("Cada barra mostra a contribuição de um nó sobre o yield acumulado.")
+    st.markdown("### Yield Decomposition — Waterfall")
+    st.caption("Each bar shows the contribution of a node to the cumulative yield.")
 
     labels, measures, values, colors_wf, texts = [], [], [], [], []
 
@@ -117,27 +117,27 @@ def render() -> None:
         colors_wf.append("#1565c0" if adj >= 0 else "#c62828")
         texts.append(f"{adj:+.0f}")
 
-    # D2, D3, D6 (fixos)
+    # D2, D3, D6 (fixed)
     for key in ["d2_cultivar", "d3_tsi", "d6_tecnologia"]:
         adj = _D_OPTIONS[key].get(decisions[key], 0)
         labels.append(_D_LABELS[key]); measures.append("relative"); values.append(adj)
         colors_wf.append("#2e7d32" if adj >= 0 else "#c62828")
         texts.append(f"{adj:+.0f}")
 
-    # D1, D4, D5 (variáveis)
+    # D1, D4, D5 (variable)
     for key in ["d1_janela", "d4_densidade", "d5_manejo"]:
         adj = _D_OPTIONS[key].get(decisions[key], 0)
         labels.append(_D_LABELS[key]); measures.append("relative"); values.append(adj)
         colors_wf.append("#2e7d32" if adj >= 0 else "#c62828")
         texts.append(f"{adj:+.0f}")
 
-    # EV Chuva
-    labels.append("EV Chuva"); measures.append("relative"); values.append(round(ev_chuva, 2))
+    # Rain EV
+    labels.append("Rain EV"); measures.append("relative"); values.append(round(ev_chuva, 2))
     colors_wf.append("#f57c00" if ev_chuva >= 0 else "#c62828")
     texts.append(f"{ev_chuva:+.1f}")
 
     # Total
-    labels.append("EV Final"); measures.append("total"); values.append(ev_final)
+    labels.append("Final EV"); measures.append("total"); values.append(ev_final)
     colors_wf.append("#111111"); texts.append(f"{ev_final:.1f}")
 
     fig_wf = go.Figure(go.Waterfall(
@@ -172,8 +172,8 @@ def render() -> None:
 
     # ── Radar — Perfil de Contexto ────────────────────────────────────────
     with col_left:
-        st.markdown("### Perfil de Contexto (C1–C7)")
-        st.caption("Ajuste de cada nó normalizado entre −1 e +1 em relação ao seu range.")
+        st.markdown("### Context Profile (C1–C7)")
+        st.caption("Each node's adjustment normalized between −1 and +1 relative to its range.")
 
         _C_RANGES = {
             "c1_regiao": (-6, 5), "c2_textura": (-7, 5), "c3_ph": (-6, 4),
@@ -203,7 +203,7 @@ def render() -> None:
         fig_radar.update_layout(
             polar=dict(
                 radialaxis=dict(visible=True, range=[0, 1], tickvals=[0, 0.5, 1],
-                                ticktext=["Mín", "Médio", "Máx"],
+                                ticktext=["Min", "Mid", "Max"],
                                 tickfont=dict(color="#1a1a2e", size=10),
                                 gridcolor="#c8c0b0", linecolor="#c8c0b0"),
                 angularaxis=dict(linecolor="#c8c0b0", gridcolor="#c8c0b0",
@@ -220,8 +220,8 @@ def render() -> None:
 
     # ── Yield por cenário de chuva ────────────────────────────────────────
     with col_right:
-        st.markdown("### Yield por Cenário de Chuva")
-        st.caption("Sua seleção vs melhor path (EV Bayes) nos 3 estados de chuva.")
+        st.markdown("### Yield by Rain Scenario")
+        st.caption("Your selection vs best path (Bayes EV) across the 3 rain states.")
 
         optimal_idx   = result["criteria"]["bayes_ev"]["path_idx"]
         optimal_path  = result["paths"][optimal_idx]
@@ -231,7 +231,7 @@ def render() -> None:
 
         fig_bar = go.Figure()
         fig_bar.add_trace(go.Bar(
-            name="Sua seleção",
+            name="Your selection",
             x=rain_short,
             y=user_sel["yields"],
             marker_color="#1565c0",
@@ -239,7 +239,7 @@ def render() -> None:
             textposition="outside",
         ))
         fig_bar.add_trace(go.Bar(
-            name="Melhor path (EV)",
+            name="Best path (EV)",
             x=rain_short,
             y=optimal_yields,
             marker_color="#2e7d32",
@@ -263,35 +263,35 @@ def render() -> None:
         st.plotly_chart(fig_bar, use_container_width=True)
 
     # ── Sensibilidade — ranking de impacto ────────────────────────────────
-    st.markdown("### Sensibilidade — Impacto de Cada Nó")
-    st.caption("Valor absoluto do ajuste de cada nó na simulação atual. Quanto maior, mais esse nó influencia o yield.")
+    st.markdown("### Sensitivity — Impact of Each Node")
+    st.caption("Absolute value of each node's adjustment in the current simulation. The larger, the more that node influences yield.")
 
     sens_rows = []
     for key, label in {**_C_LABELS, **_D_LABELS}.items():
         opts = _C_OPTIONS.get(key) or _D_OPTIONS.get(key, {})
         val  = context.get(key) or decisions.get(key, "")
         adj  = opts.get(val, 0)
-        tipo = "Contexto" if key.startswith("c") else "Decisão"
-        sens_rows.append({"Nó": label, "Ajuste (sc/ha)": adj, "Impacto absoluto": abs(adj), "Tipo": tipo})
+        tipo = "Context" if key.startswith("c") else "Decision"
+        sens_rows.append({"Node": label, "Adjustment (sc/ha)": adj, "Absolute impact": abs(adj), "Type": tipo})
 
-    df_sens = pd.DataFrame(sens_rows).sort_values("Impacto absoluto", ascending=True)
+    df_sens = pd.DataFrame(sens_rows).sort_values("Absolute impact", ascending=True)
 
     fig_sens = go.Figure(go.Bar(
-        x=df_sens["Ajuste (sc/ha)"],
-        y=df_sens["Nó"],
+        x=df_sens["Adjustment (sc/ha)"],
+        y=df_sens["Node"],
         orientation="h",
         marker_color=[
-            "#1565c0" if t == "Contexto" else "#2e7d32"
+            "#1565c0" if t == "Context" else "#2e7d32"
             if v >= 0 else "#c62828"
-            for t, v in zip(df_sens["Tipo"], df_sens["Ajuste (sc/ha)"])
+            for t, v in zip(df_sens["Type"], df_sens["Adjustment (sc/ha)"])
         ],
-        text=[f"{v:+.0f}" for v in df_sens["Ajuste (sc/ha)"]],
+        text=[f"{v:+.0f}" for v in df_sens["Adjustment (sc/ha)"]],
         textposition="outside",
     ))
     fig_sens.add_vline(x=0, line_color="#999", line_width=1)
     fig_sens.update_layout(
         height=420,
-        xaxis_title="Ajuste (sc/ha)",
+        xaxis_title="Adjustment (sc/ha)",
         margin=dict(t=10, l=20, r=60, b=20),
         plot_bgcolor="rgba(0,0,0,0)",
         paper_bgcolor="rgba(0,0,0,0)",
@@ -302,4 +302,4 @@ def render() -> None:
         showlegend=False,
     )
     st.plotly_chart(fig_sens, use_container_width=True)
-    st.caption("Azul = nó de contexto  ·  Verde/Vermelho = nó de decisão")
+    st.caption("Blue = context node  ·  Green/Red = decision node")

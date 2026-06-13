@@ -90,11 +90,11 @@ def register(username: str, name: str, email: str, password: str) -> tuple[bool,
     users = _load()
     ukey  = username.strip().lower()
     if not ukey:
-        return False, "Nome de usuário inválido."
+        return False, "Invalid username."
     if ukey in users:
-        return False, "Usuário já existe."
+        return False, "Username already exists."
     if any(u["email"].lower() == email.strip().lower() for u in users.values()):
-        return False, "E-mail já cadastrado."
+        return False, "Email already registered."
     users[ukey] = {
         "name":          name.strip(),
         "email":         email.strip().lower(),
@@ -102,7 +102,7 @@ def register(username: str, name: str, email: str, password: str) -> tuple[bool,
         "created_at":    datetime.now().isoformat(),
     }
     _save(users)
-    return True, "Cadastro realizado com sucesso!"
+    return True, "Account created successfully!"
 
 
 def logout() -> None:
@@ -423,51 +423,51 @@ def render_auth() -> None:
     with col_hero:
         st.markdown("""
         <div class="auth-hero">
-            <div class="auth-hero-badge">Soja Verão · Mato Grosso</div>
+            <div class="auth-hero-badge">Soy · Mato Grosso</div>
             <div class="auth-hero-title">
-                Simule sua safra<br>
-                <span>antes de decidir.</span>
+                Simulate your harvest<br>
+                <span>before deciding.</span>
             </div>
             <div class="auth-hero-desc">
-                Informe as condições do seu talhão e suas decisões de manejo.
-                Em segundos, receba recomendações baseadas em análise de cenários
-                climáticos e agronômicos para maximizar sua produtividade.
+                Enter your field conditions and management decisions.
+                In seconds, receive recommendations based on climate and
+                agronomic scenario analysis to maximize your productivity.
             </div>
             <div class="auth-benefit-list">
                 <div class="auth-benefit-item">
                     <div class="auth-benefit-icon">📅</div>
                     <div class="auth-benefit-content">
-                        <strong>Janela de plantio ideal</strong>
-                        <span>Descubra qual período entrega mais sacas por hectare no seu contexto.</span>
+                        <strong>Ideal planting window</strong>
+                        <span>Discover which period delivers the most bags per hectare in your context.</span>
                     </div>
                 </div>
                 <div class="auth-benefit-item">
                     <div class="auth-benefit-icon">🌧️</div>
                     <div class="auth-benefit-content">
-                        <strong>Análise de risco climático</strong>
-                        <span>El Niño, La Niña ou neutro — probabilidades de seca no período crítico da cultura.</span>
+                        <strong>Climate risk analysis</strong>
+                        <span>El Niño, La Niña or neutral — drought probabilities during the crop's critical period.</span>
                     </div>
                 </div>
                 <div class="auth-benefit-item">
                     <div class="auth-benefit-icon">📊</div>
                     <div class="auth-benefit-content">
-                        <strong>Relatório completo para download</strong>
-                        <span>PDF com recomendações, orientações de aplicação e resumo do cenário.</span>
+                        <strong>Complete downloadable report</strong>
+                        <span>PDF with recommendations, application guidelines and scenario summary.</span>
                     </div>
                 </div>
             </div>
             <div class="auth-stats-row">
                 <div class="auth-stat">
                     <div class="auth-stat-val">27</div>
-                    <div class="auth-stat-label">Combinações avaliadas</div>
+                    <div class="auth-stat-label">Combinations evaluated</div>
                 </div>
                 <div class="auth-stat">
                     <div class="auth-stat-val">3</div>
-                    <div class="auth-stat-label">Cenários climáticos</div>
+                    <div class="auth-stat-label">Climate scenarios</div>
                 </div>
                 <div class="auth-stat">
-                    <div class="auth-stat-val">1.000</div>
-                    <div class="auth-stat-label">Simulações Monte Carlo</div>
+                    <div class="auth-stat-val">1,000</div>
+                    <div class="auth-stat-label">Monte Carlo simulations</div>
                 </div>
             </div>
         </div>
@@ -494,52 +494,52 @@ def render_auth() -> None:
                     <path d="M18 27 C22 25 25 21 23 17 C21 19 19 23 18 27Z" fill="rgba(255,255,255,0.55)"/>
                 </svg>
             </div>
-            <div class="auth-brand-name">Simulador de Safra</div>
-            <div class="auth-brand-sub">Soja Verão · Mato Grosso</div>
+            <div class="auth-brand-name">Harvest Simulator</div>
+            <div class="auth-brand-sub">Soy · Mato Grosso</div>
         </div>
         <div class="auth-divider"></div>
         """, unsafe_allow_html=True)
 
-        tab_login, tab_reg = st.tabs(["Entrar", "Criar conta"])
+        tab_login, tab_reg = st.tabs(["Sign in", "Create account"])
 
         with tab_login:
             with st.form("form_login", clear_on_submit=False):
-                username = st.text_input("Usuário", placeholder="seu.usuario")
-                password = st.text_input("Senha", type="password", placeholder="••••••")
-                entered  = st.form_submit_button("Entrar", type="primary", use_container_width=True)
+                username = st.text_input("Username", placeholder="your.username")
+                password = st.text_input("Password", type="password", placeholder="••••••")
+                entered  = st.form_submit_button("Sign in", type="primary", use_container_width=True)
             if entered:
                 if not username or not password:
-                    st.error("Preencha usuário e senha.")
+                    st.error("Please enter username and password.")
                 elif login(username, password):
                     st.rerun()
                 else:
-                    st.error("Usuário ou senha incorretos.")
+                    st.error("Incorrect username or password.")
 
         with tab_reg:
             with st.form("form_register", clear_on_submit=True):
-                r_name = st.text_input("Nome completo", placeholder="Ex: João da Silva")
-                r_email = st.text_input("E-mail", placeholder="joao@fazenda.com")
-                r_user  = st.text_input("Usuário", placeholder="joao.silva")
-                r_pwd   = st.text_input("Senha", type="password", placeholder="mín. 6 caracteres")
-                r_pwd2  = st.text_input("Confirmar senha", type="password")
-                submitted = st.form_submit_button("Criar conta", type="primary", use_container_width=True)
+                r_name = st.text_input("Full name", placeholder="Ex: John Smith")
+                r_email = st.text_input("Email", placeholder="john@farm.com")
+                r_user  = st.text_input("Username", placeholder="john.smith")
+                r_pwd   = st.text_input("Password", type="password", placeholder="min. 6 characters")
+                r_pwd2  = st.text_input("Confirm password", type="password")
+                submitted = st.form_submit_button("Create account", type="primary", use_container_width=True)
             if submitted:
                 if not all([r_name, r_email, r_user, r_pwd]):
-                    st.error("Preencha todos os campos.")
+                    st.error("Please fill in all fields.")
                 elif r_pwd != r_pwd2:
-                    st.error("As senhas não conferem.")
+                    st.error("Passwords do not match.")
                 elif len(r_pwd) < 6:
-                    st.error("Senha deve ter no mínimo 6 caracteres.")
+                    st.error("Password must be at least 6 characters.")
                 else:
                     ok, msg = register(r_user, r_name, r_email, r_pwd)
                     if ok:
-                        st.success(msg + " Agora faça login.")
+                        st.success(msg + " Now sign in.")
                     else:
                         st.error(msg)
 
         st.markdown("""
         <div class="auth-demo-box">
-            <strong>Acesso de demonstração</strong><br>
-            Usuário: <code>demo</code> &nbsp;·&nbsp; Senha: <code>demo123</code>
+            <strong>Demo access</strong><br>
+            Username: <code>demo</code> &nbsp;·&nbsp; Password: <code>demo123</code>
         </div>
         """, unsafe_allow_html=True)

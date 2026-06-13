@@ -1,4 +1,4 @@
-"""Painel Explicativo — Como o simulador chega às recomendações."""
+"""Explainer Panel — How the simulator reaches its recommendations."""
 
 from __future__ import annotations
 import streamlit as st
@@ -7,19 +7,19 @@ import plotly.graph_objects as go
 
 from frontend.navigation import go as nav_go
 
-# ── Definição dos passos ──────────────────────────────────────────────────────
+# ── Step definitions ──────────────────────────────────────────────────────────
 
 _STEPS = [
-    (1,  "Ponto de Partida",       "A produtividade média histórica como referência"),
-    (2,  "Contexto do Talhão",     "7 fatores do campo ajustam a referência"),
-    (3,  "Decisões do Produtor",   "6 decisões — fixas e variáveis"),
-    (4,  "27 Caminhos Possíveis",  "Combinações das decisões variáveis"),
-    (5,  "Clima e ENSO",           "Cenários climáticos e suas probabilidades"),
-    (6,  "Efeitos de Interação",   "Combinações que amplificam ou penalizam o resultado"),
-    (7,  "Matriz de Payoff",       "27 caminhos × 3 climas = todos os resultados possíveis"),
-    (8,  "Critérios de Decisão",   "6 perspectivas para escolher o melhor caminho"),
-    (9,  "Análise de Risco",       "10.000 simulações estimam o intervalo de confiança"),
-    (10, "Recomendação Final",     "O modelo aponta a combinação com maior retorno esperado"),
+    (1,  "Starting Point",         "Historical average yield as the model baseline"),
+    (2,  "Field Context",          "7 field factors adjust the baseline"),
+    (3,  "Producer Decisions",     "6 decisions — fixed and variable"),
+    (4,  "27 Possible Paths",      "Combinations of variable decisions"),
+    (5,  "Weather & ENSO",         "Climate scenarios and their probabilities"),
+    (6,  "Interaction Effects",    "Combinations that amplify or penalize the outcome"),
+    (7,  "Payoff Matrix",          "27 paths × 3 climates = all possible outcomes"),
+    (8,  "Decision Criteria",      "6 perspectives for choosing the best path"),
+    (9,  "Risk Analysis",          "10,000 simulations estimate the confidence interval"),
+    (10, "Final Recommendation",   "The model identifies the combination with the highest expected return"),
 ]
 
 _N = len(_STEPS)
@@ -64,22 +64,22 @@ def _nav_buttons(current: int) -> None:
     c_back, c_info, c_next = st.columns([1, 4, 1])
     with c_back:
         if current > 1:
-            if st.button("← Anterior", use_container_width=True):
+            if st.button("← Previous", use_container_width=True):
                 st.session_state.explainer_step -= 1
                 st.rerun()
     with c_info:
         st.markdown(
             f'<div style="text-align:center;font-size:0.78rem;color:#6b6b8a;padding-top:8px">'
-            f'Passo {current} de {_N}</div>',
+            f'Step {current} of {_N}</div>',
             unsafe_allow_html=True,
         )
     with c_next:
         if current < _N:
-            if st.button("Próximo →", type="primary", use_container_width=True):
+            if st.button("Next →", type="primary", use_container_width=True):
                 st.session_state.explainer_step += 1
                 st.rerun()
         else:
-            if st.button("Reiniciar", use_container_width=True):
+            if st.button("Restart", use_container_width=True):
                 st.session_state.explainer_step = 1
                 st.rerun()
 
@@ -87,7 +87,7 @@ def _nav_buttons(current: int) -> None:
 def _step_header(num: int, title: str, desc: str) -> None:
     st.markdown(f"""
     <div class="exp-step-header">
-        <div class="exp-step-number">Passo {num}</div>
+        <div class="exp-step-number">Step {num}</div>
         <div class="exp-step-title">{title}</div>
         <div class="exp-step-desc">{desc}</div>
     </div>
@@ -112,10 +112,10 @@ def _info_card(title: str, body: str, color: str = "#1a5c38") -> None:
     """, unsafe_allow_html=True)
 
 
-# ── Passos ────────────────────────────────────────────────────────────────────
+# ── Steps ─────────────────────────────────────────────────────────────────────
 
 def _render_step_1() -> None:
-    _step_header(1, "Ponto de Partida", "A produtividade média histórica do Mato Grosso serve como âncora do modelo")
+    _step_header(1, "Starting Point", "Mato Grosso's historical average yield serves as the model anchor")
 
     c1, c2 = st.columns([1, 2], gap="large")
     with c1:
@@ -124,46 +124,46 @@ def _render_step_1() -> None:
             <div style="font-size:0.7rem;font-weight:700;color:#6b6b8a;text-transform:uppercase;letter-spacing:0.1em">Baseline</div>
             <div style="font-size:5rem;font-weight:900;color:#1a5c38;line-height:1">60</div>
             <div style="font-size:1rem;color:#3a3a5c;font-weight:600">sc/ha</div>
-            <div style="font-size:0.72rem;color:#6b6b8a;margin-top:8px">Fonte: CONAB · MT 2023/24</div>
+            <div style="font-size:0.72rem;color:#6b6b8a;margin-top:8px">Source: CONAB · MT 2023/24</div>
         </div>
         """, unsafe_allow_html=True)
 
     with c2:
-        _info_card("Por que 60 sc/ha?",
-            "A produtividade média do Mato Grosso na safra 2023/24 foi de 60 sacas por hectare, "
-            "segundo o levantamento da CONAB. Este número representa o desempenho de um produtor "
-            "médio da região — antes de qualquer ajuste pelas condições específicas do talhão.")
+        _info_card("Why 60 sc/ha?",
+            "The average yield in Mato Grosso for the 2023/24 season was 60 bags per hectare, "
+            "according to CONAB's survey. This figure represents the performance of an average "
+            "producer in the region — before any adjustments for specific field conditions.")
 
         st.markdown("<br>", unsafe_allow_html=True)
         _formula_box(
-            "Produtividade = <strong>60</strong> + ajustes do contexto + ajustes das decisões + ajuste climático",
-            label="Equação geral do modelo"
+            "Yield = <strong>60</strong> + context adjustments + decision adjustments + climate adjustment",
+            label="Model general equation"
         )
 
         st.markdown("<br>", unsafe_allow_html=True)
-        _info_card("Como funciona o ajuste",
-            "Cada fator — solo, clima, manejo, cultivar — adiciona ou subtrai sacas por hectare "
-            "em relação a essa referência. O produtor que tem condições melhores que a média "
-            "recebe ajuste positivo; condições piores, ajuste negativo.",
+        _info_card("How adjustments work",
+            "Each factor — soil, climate, management, cultivar — adds or subtracts bags per hectare "
+            "relative to this reference. Producers with conditions better than average receive a "
+            "positive adjustment; worse conditions receive a negative adjustment.",
             color="#1565c0")
 
 
 def _render_step_2(result: dict | None) -> None:
-    _step_header(2, "Contexto do Talhão",
-        "7 fatores não controláveis pelo produtor descrevem as condições do campo")
+    _step_header(2, "Field Context",
+        "7 factors outside the producer's control describe the field conditions")
 
     col_table, col_chart = st.columns([1, 1], gap="large")
 
     with col_table:
-        st.markdown("**Os 7 fatores de contexto e seu impacto (sc/ha):**")
+        st.markdown("**The 7 context factors and their impact (sc/ha):**")
         labels = [
-            ("C1", "Região", "Favorável (Sorriso, Sinop...)", "+5", "Desafiadora (Primavera, Querência)", "−6"),
-            ("C2", "Textura do Solo", "Argilosa / bem estruturada", "+5", "Arenosa / baixa retenção", "−7"),
-            ("C3", "pH do Solo", "Adequado 5,5–6,5", "+4", "Crítico <5,0 ou >6,8", "−6"),
-            ("C4", "Drenagem", "Sem encharcamento", "+3", "Com alagamentos frequentes", "−8"),
-            ("C5", "Tipo de Solo", "Latossolo / Nitossolo", "+5", "Neossolo / Gleissolo", "−7"),
-            ("C6", "Área", "Acima de 200 ha", "+2", "Até 50 ha", "−1"),
-            ("C7", "Previsão Climática", "El Niño", "+3", "La Niña", "−3"),
+            ("C1", "Region",          "Favorable (Sorriso, Sinop...)", "+5", "Challenging (Primavera, Querência)", "−6"),
+            ("C2", "Soil Texture",    "Clay / well-structured",        "+5", "Sandy / low retention",              "−7"),
+            ("C3", "Soil pH",         "Adequate 5.5–6.5",              "+4", "Critical <5.0 or >6.8",              "−6"),
+            ("C4", "Drainage",        "No waterlogging",               "+3", "Frequent flooding",                  "−8"),
+            ("C5", "Soil Type",       "Latosol / Nitosol",             "+5", "Neosol / Gleisol",                   "−7"),
+            ("C6", "Area",            "Above 200 ha",                  "+2", "Up to 50 ha",                        "−1"),
+            ("C7", "Climate Outlook", "El Niño",                       "+3", "La Niña",                            "−3"),
         ]
         for cod, nome, melhor, val_m, pior, val_p in labels:
             st.markdown(f"""
@@ -177,17 +177,17 @@ def _render_step_2(result: dict | None) -> None:
             """, unsafe_allow_html=True)
 
     with col_chart:
-        st.markdown("**Amplitude de ajuste por fator:**")
-        nomes = ["Região", "Textura", "pH", "Drenagem", "Tipo Solo", "Área", "ENSO"]
+        st.markdown("**Adjustment range per factor:**")
+        nomes = ["Region", "Texture", "pH", "Drainage", "Soil Type", "Area", "ENSO"]
         positivos = [5, 5, 4, 3, 5, 2, 3]
         negativos = [-6, -7, -6, -8, -7, -1, -3]
 
         fig = go.Figure()
         fig.add_bar(x=positivos, y=nomes, orientation="h",
-                    marker_color="#2d8a56", name="Ganho máximo",
+                    marker_color="#2d8a56", name="Max gain",
                     text=[f"+{v}" for v in positivos], textposition="outside")
         fig.add_bar(x=negativos, y=nomes, orientation="h",
-                    marker_color="#c62828", name="Penalidade máxima",
+                    marker_color="#c62828", name="Max penalty",
                     text=[str(v) for v in negativos], textposition="outside")
         fig.update_layout(
             barmode="overlay", height=280, margin=dict(l=80, r=60, t=10, b=30),
@@ -210,21 +210,21 @@ def _render_step_2(result: dict | None) -> None:
             sign = "+" if ctx_adj >= 0 else ""
             st.markdown(f"""
             <div style="background:#f1f8f3;border-left:3px solid #1a5c38;padding:10px 14px;border-radius:0 8px 8px 0;margin-top:8px">
-                <span style="font-size:0.75rem;color:#1a5c38;font-weight:700">RESULTADO NA SUA SIMULAÇÃO</span><br>
+                <span style="font-size:0.75rem;color:#1a5c38;font-weight:700">YOUR SIMULATION RESULT</span><br>
                 <span style="font-size:1.4rem;font-weight:800;color:{color}">{sign}{ctx_adj:.1f} sc/ha</span>
-                <span style="font-size:0.8rem;color:#3a3a5c"> de ajuste pelo contexto</span><br>
-                <span style="font-size:0.8rem;color:#1a5c38">Base ajustada: {result['context_base']:.0f} sc/ha</span>
+                <span style="font-size:0.8rem;color:#3a3a5c"> context adjustment</span><br>
+                <span style="font-size:0.8rem;color:#1a5c38">Adjusted base: {result['context_base']:.0f} sc/ha</span>
             </div>
             """, unsafe_allow_html=True)
 
 
 def _render_step_3(result: dict | None) -> None:
-    _step_header(3, "Decisões do Produtor",
-        "6 decisões de manejo — três deslocam todos os cenários igualmente, três criam os cenários")
+    _step_header(3, "Producer Decisions",
+        "6 management decisions — three shift all scenarios equally, three create the scenarios")
 
     _formula_box(
-        "Base efetiva = 60 + contexto + <strong style='color:#b35c00'>D2 (cultivar) + D3 (TSI) + D6 (plantadeira)</strong> "
-        "+ <strong style='color:#1a5c38'>D1 (janela) + D4 (densidade) + D5 (manejo doenças)</strong>"
+        "Effective base = 60 + context + <strong style='color:#b35c00'>D2 (cultivar) + D3 (seed treatment) + D6 (planter)</strong> "
+        "+ <strong style='color:#1a5c38'>D1 (window) + D4 (density) + D5 (disease management)</strong>"
     )
 
     st.markdown("<br>", unsafe_allow_html=True)
@@ -235,13 +235,13 @@ def _render_step_3(result: dict | None) -> None:
         st.markdown("""
         <div style="background:#fff8e1;border:1px solid #ffe082;border-radius:10px;padding:20px">
             <div style="font-size:0.7rem;font-weight:700;color:#b35c00;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:12px">
-                🔒 Decisões Fixas — deslocam todos os 27 cenários igualmente
+                🔒 Fixed Decisions — shift all 27 scenarios equally
             </div>
         """, unsafe_allow_html=True)
         for cod, nome, desc, faixa in [
-            ("D2", "Cultivar", "Potencial genético da variedade", "−8 a +6 sc/ha"),
-            ("D3", "TSI", "Tratamento Industrial de Sementes", "−5 a +3 sc/ha"),
-            ("D6", "Plantadeira", "Tecnologia e precisão de plantio", "−4 a +3 sc/ha"),
+            ("D2", "Cultivar",       "Genetic potential of the variety",        "−8 to +6 sc/ha"),
+            ("D3", "Seed Treatment", "Industrial seed treatment (TSI)",          "−5 to +3 sc/ha"),
+            ("D6", "Planter",        "Planting technology and precision",        "−4 to +3 sc/ha"),
         ]:
             st.markdown(f"""
             <div style="padding:8px 0;border-bottom:1px solid #ffe082">
@@ -253,7 +253,7 @@ def _render_step_3(result: dict | None) -> None:
         if result:
             st.markdown(f"""
             <div style="margin-top:10px;font-size:0.8rem;color:#b35c00;font-weight:700">
-                Ajuste fixo na sua simulação: {result['fixed_adj']:+.1f} sc/ha
+                Fixed adjustment in your simulation: {result['fixed_adj']:+.1f} sc/ha
             </div>
             """, unsafe_allow_html=True)
         st.markdown("</div>", unsafe_allow_html=True)
@@ -262,13 +262,13 @@ def _render_step_3(result: dict | None) -> None:
         st.markdown("""
         <div style="background:#e8f5e9;border:1px solid #a5d6a7;border-radius:10px;padding:20px">
             <div style="font-size:0.7rem;font-weight:700;color:#1a5c38;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:12px">
-                🔀 Decisões Variáveis — cada combinação gera um cenário diferente
+                🔀 Variable Decisions — each combination generates a different scenario
             </div>
         """, unsafe_allow_html=True)
         for cod, nome, desc, faixa, opts in [
-            ("D1", "Janela de Plantio", "Período de semeadura", "−8 a +4 sc/ha", "3 opções"),
-            ("D4", "Densidade", "Sementes por hectare", "−1 a +2 sc/ha", "3 opções"),
-            ("D5", "Manejo de Doenças", "Número de fungicidas", "−7 a +5 sc/ha", "3 opções"),
+            ("D1", "Planting Window",    "Sowing period",              "−8 to +4 sc/ha", "3 options"),
+            ("D4", "Density",            "Seeds per hectare",          "−1 to +2 sc/ha", "3 options"),
+            ("D5", "Disease Management", "Number of fungicide sprays", "−7 to +5 sc/ha", "3 options"),
         ]:
             st.markdown(f"""
             <div style="padding:8px 0;border-bottom:1px solid #a5d6a7">
@@ -279,42 +279,38 @@ def _render_step_3(result: dict | None) -> None:
             """, unsafe_allow_html=True)
         st.markdown("""
         <div style="margin-top:10px;font-size:0.8rem;color:#1a5c38;font-weight:700">
-            3 × 3 × 3 = 27 combinações avaliadas simultaneamente
+            3 × 3 × 3 = 27 combinations evaluated simultaneously
         </div>
         """, unsafe_allow_html=True)
         st.markdown("</div>", unsafe_allow_html=True)
 
     st.markdown("<br>", unsafe_allow_html=True)
-    _info_card("Por que separar fixas das variáveis?",
-        "As decisões fixas (D2, D3, D6) deslocam todos os 27 caminhos pelo mesmo valor — "
-        "não mudam qual combinação é a melhor, só mudam o nível absoluto de produtividade. "
-        "As variáveis (D1, D4, D5) mudam o ranking entre os caminhos porque cada uma interage "
-        "diferente com os cenários climáticos.", color="#1565c0")
+    _info_card("Why separate fixed from variable?",
+        "Fixed decisions (D2, D3, D6) shift all 27 paths by the same value — "
+        "they don't change which combination is best, only the absolute yield level. "
+        "Variable decisions (D1, D4, D5) change the ranking among paths because each "
+        "interacts differently with climate scenarios.", color="#1565c0")
 
 
 def _render_step_4(result: dict | None) -> None:
-    _step_header(4, "27 Caminhos Possíveis",
-        "D1 × D4 × D5 = 3 × 3 × 3 = 27 combinações avaliadas em paralelo")
+    _step_header(4, "27 Possible Paths",
+        "D1 × D4 × D5 = 3 × 3 × 3 = 27 combinations evaluated in parallel")
 
     c_tree, c_explain = st.columns([3, 2], gap="large")
 
     with c_tree:
-        st.markdown("**Estrutura das combinações:**")
-        d1_opts = ["Precoce\n(até 15/out)", "Ótima\n(16/out–10/nov)", "Tardia\n(após 10/nov)"]
-        d4_opts = ["Dens. Baixa", "Dens. Média", "Dens. Alta"]
-        d5_opts = ["Manejo Intensivo", "Manejo Padrão", "Manejo Reduzido"]
+        st.markdown("**Combination structure:**")
 
         rows = []
-        for i, d1 in enumerate(["Precoce", "Ótima", "Tardia"]):
-            for j, d4 in enumerate(["Baixa", "Média", "Alta"]):
-                for k, d5 in enumerate(["Intensivo", "Padrão", "Reduzido"]):
+        for i, d1 in enumerate(["Early", "Optimal", "Late"]):
+            for j, d4 in enumerate(["Low", "Medium", "High"]):
+                for k, d5 in enumerate(["Intensive", "Standard", "Reduced"]):
                     path_num = i * 9 + j * 3 + k + 1
-                    rows.append({"#": path_num, "D1 · Janela": d1, "D4 · Densidade": d4, "D5 · Manejo": d5})
+                    rows.append({"#": path_num, "D1 · Window": d1, "D4 · Density": d4, "D5 · Management": d5})
 
         df = pd.DataFrame(rows).set_index("#")
         highlight_idx = None
         if result:
-            ps = result.get("paths", [])
             opt_idx = result.get("criteria", {}).get("bayes_ev", {}).get("path_idx", None)
             highlight_idx = opt_idx + 1 if opt_idx is not None else None
 
@@ -325,28 +321,28 @@ def _render_step_4(result: dict | None) -> None:
 
         st.dataframe(df.style.apply(_hl, axis=1), use_container_width=True, height=400)
         if highlight_idx:
-            st.caption(f"★ linha {highlight_idx} = melhor caminho da sua simulação")
+            st.caption(f"★ row {highlight_idx} = best path in your simulation")
 
     with c_explain:
-        _info_card("O que são esses 27 caminhos?",
-            "Cada linha da tabela representa uma estratégia completa de manejo: "
-            "uma janela de plantio específica, uma densidade específica e um nível "
-            "de proteção contra doenças específico. O simulador avalia todas ao mesmo tempo.")
+        _info_card("What are these 27 paths?",
+            "Each row in the table represents a complete management strategy: "
+            "a specific planting window, a specific density, and a specific level "
+            "of disease protection. The simulator evaluates all of them simultaneously.")
 
         st.markdown("<br>", unsafe_allow_html=True)
 
         st.markdown("""
         <div style="background:#ffffff;border:1.5px solid #c4c4d4;border-radius:10px;padding:16px;box-shadow:0 2px 8px rgba(0,0,0,0.08)">
-            <div style="font-size:0.7rem;font-weight:700;color:#4a4a6a;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:10px">Lógica da combinação</div>
+            <div style="font-size:0.7rem;font-weight:700;color:#4a4a6a;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:10px">Combination logic</div>
         """, unsafe_allow_html=True)
         for n, label, sub in [
-            ("3", "opções de janela", "Precoce · Ótima · Tardia"),
+            ("3", "window options",     "Early · Optimal · Late"),
             ("×", "", ""),
-            ("3", "opções de densidade", "Baixa · Média · Alta"),
+            ("3", "density options",    "Low · Medium · High"),
             ("×", "", ""),
-            ("3", "opções de manejo", "Intensivo · Padrão · Reduzido"),
+            ("3", "management options", "Intensive · Standard · Reduced"),
             ("=", "", ""),
-            ("27", "caminhos avaliados", "em paralelo, para cada cenário climático"),
+            ("27", "paths evaluated",  "in parallel, for each climate scenario"),
         ]:
             if n in ("×", "="):
                 st.markdown(f'<div style="text-align:center;font-size:1.4rem;color:#1a5c38;font-weight:700;line-height:1.2">{n}</div>', unsafe_allow_html=True)
@@ -364,24 +360,24 @@ def _render_step_4(result: dict | None) -> None:
 
 
 def _render_step_5(result: dict | None) -> None:
-    _step_header(5, "Clima e ENSO",
-        "Cada um dos 27 caminhos é avaliado em 3 estados climáticos com probabilidades condicionais ao ENSO")
+    _step_header(5, "Weather & ENSO",
+        "Each of the 27 paths is evaluated under 3 climate states with probabilities conditional on ENSO")
 
     from backend.data import RAIN_STATES, RAIN_PROBS
 
     c_prob, c_explain = st.columns([3, 2], gap="large")
 
     with c_prob:
-        st.markdown("**Probabilidades de chuva no período R3–R6 (enchimento de grão):**")
+        st.markdown("**Rainfall probabilities during R3–R6 (grain filling):**")
         enso_labels = {
             "El Niño (chuva regular em MT)":    "El Niño",
-            "Neutro":                            "Neutro",
+            "Neutro":                            "Neutral",
             "La Niña (chuva concentrada/curta)": "La Niña",
         }
         rain_labels = {
-            "Seca (<150 mm)":      "Seca",
+            "Seca (<150 mm)":      "Dry",
             "Normal (150–250 mm)": "Normal",
-            "Úmida (>250 mm)":     "Úmida",
+            "Úmida (>250 mm)":     "Wet",
         }
         rain_adjs = {k: v for k, v in RAIN_STATES.items()}
 
@@ -398,7 +394,6 @@ def _render_step_5(result: dict | None) -> None:
         df_prob = pd.DataFrame(rows).set_index("ENSO")
         user_enso = None
         if result:
-            from backend.data import CONTEXT_NODES
             ctx = st.session_state.get("sim_context", {})
             user_enso = enso_labels.get(ctx.get("c7_enso", ""), None)
 
@@ -409,11 +404,11 @@ def _render_step_5(result: dict | None) -> None:
 
         st.dataframe(df_prob.style.apply(_hl_enso, axis=1), use_container_width=True)
         if user_enso:
-            st.caption(f"★ linha destacada = ENSO da sua simulação ({user_enso})")
+            st.caption(f"★ highlighted row = ENSO in your simulation ({user_enso})")
 
         st.markdown("<br>", unsafe_allow_html=True)
         fig = go.Figure()
-        colors = {"Seca": "#c62828", "Normal": "#f57c00", "Úmida": "#1565c0"}
+        colors = {"Dry": "#c62828", "Normal": "#f57c00", "Wet": "#1565c0"}
         for enso_key, enso_short in enso_labels.items():
             for rain_key, rain_short in rain_labels.items():
                 prob = RAIN_PROBS[enso_key][rain_key]
@@ -439,71 +434,71 @@ def _render_step_5(result: dict | None) -> None:
         st.plotly_chart(fig, use_container_width=True)
 
     with c_explain:
-        _info_card("Por que usar ENSO?",
-            "El Niño e La Niña alteram significativamente a distribuição de chuvas no Mato Grosso "
-            "durante o enchimento de grão (R3–R6). Em anos de La Niña, a probabilidade de seca "
-            "sobe para 50% — mudando completamente qual estratégia é mais segura.")
+        _info_card("Why use ENSO?",
+            "El Niño and La Niña significantly alter rainfall distribution in Mato Grosso "
+            "during grain filling (R3–R6). In La Niña years, the probability of drought "
+            "rises to 50% — completely changing which strategy is safest.")
 
         st.markdown("<br>", unsafe_allow_html=True)
-        _info_card("Ajuste de cada estado climático",
-            "• Seca (<150 mm): −8 sc/ha\n"
+        _info_card("Adjustment per climate state",
+            "• Dry (<150 mm): −8 sc/ha\n"
             "• Normal (150–250 mm): +2 sc/ha\n"
-            "• Úmida (>250 mm): +4 sc/ha\n\n"
-            "Esses valores são aplicados por cima de cada caminho para gerar a matriz final.",
+            "• Wet (>250 mm): +4 sc/ha\n\n"
+            "These values are applied on top of each path to generate the final matrix.",
             color="#1565c0")
 
         st.markdown("<br>", unsafe_allow_html=True)
-        _info_card("Resultado",
-            "Cada um dos 27 caminhos é avaliado em 3 climas → "
-            "matriz de 27 × 3 = 81 resultados possíveis.",
+        _info_card("Result",
+            "Each of the 27 paths is evaluated under 3 climates → "
+            "a matrix of 27 × 3 = 81 possible outcomes.",
             color="#b35c00")
 
 
 def _render_step_6() -> None:
-    _step_header(6, "Efeitos de Interação",
-        "Algumas combinações de variáveis produzem efeitos que vão além da soma das partes")
+    _step_header(6, "Interaction Effects",
+        "Some variable combinations produce effects that go beyond the sum of their parts")
 
     st.markdown("""
     <div style="background:#fff3e0;border-left:4px solid #f57c00;padding:12px 16px;border-radius:0 8px 8px 0;margin-bottom:20px;font-size:0.85rem;color:#3a3a5c">
-        <strong>O que é uma interação?</strong> O modelo aditivo assume que cada fator contribui de forma independente.
-        Mas na prática, cultivar de alto potencial + manejo ruim de doenças é <em>mais</em> prejudicial do que a soma dos dois.
-        Os termos de interação capturam esses efeitos.
+        <strong>What is an interaction?</strong> The additive model assumes each factor contributes independently.
+        But in practice, a high-potential cultivar + poor disease management is <em>more</em> damaging than the sum of the two.
+        Interaction terms capture these effects.
     </div>
     """, unsafe_allow_html=True)
 
     inter_data = [
         {
-            "titulo": "Interação 1 — Cultivar × Manejo de Doenças (D2 × D5)",
+            "titulo": "Interaction 1 — Cultivar × Disease Management (D2 × D5)",
             "cor": "#1a5c38",
-            "desc": "Cultivares de alto potencial genético são mais susceptíveis a ferrugem. Com manejo adequado, entregam o potencial. Com manejo ruim, o alto potencial vira passivo.",
+            "desc": "High genetic potential cultivars are more susceptible to rust. With adequate management, they deliver their potential. With poor management, high potential becomes a liability.",
             "linhas": [
-                ("Alto potencial + Manejo intensivo", "+2,0 sc/ha", "#2e7d32"),
-                ("Alto potencial + Manejo reduzido",  "−2,0 sc/ha", "#c62828"),
-                ("Intermediário + Manejo intensivo",  "+0,5 sc/ha", "#2e7d32"),
-                ("Legado + Manejo intensivo",         "−1,0 sc/ha", "#c62828"),
+                ("High potential + Intensive management", "+2.0 sc/ha", "#2e7d32"),
+                ("High potential + Reduced management",   "−2.0 sc/ha", "#c62828"),
+                ("Intermediate + Intensive management",   "+0.5 sc/ha", "#2e7d32"),
+                ("Legacy + Intensive management",         "−1.0 sc/ha", "#c62828"),
             ],
         },
         {
-            "titulo": "Interação 2 — Drenagem × Chuva (C4 × Clima)",
+            "titulo": "Interaction 2 — Drainage × Rainfall (C4 × Climate)",
             "cor": "#1565c0",
-            "desc": "Solo com drenagem ruim não penaliza em anos secos — às vezes até ajuda por reter umidade. O problema aparece em anos úmidos, quando o encharcamento causa asfixia radicular.",
+            "desc": "Poor drainage doesn't penalize in dry years — it can even help by retaining moisture. The problem appears in wet years, when waterlogging causes root asphyxiation.",
             "linhas": [
-                ("Drenagem ruim + Ano úmido",     "−4,0 sc/ha", "#c62828"),
-                ("Drenagem ruim + Ano normal",    "−1,5 sc/ha", "#f57c00"),
-                ("Drenagem ruim + Ano seco",      "+4,0 sc/ha", "#2e7d32"),
-                ("Drenagem moderada + Úmido",     "−1,5 sc/ha", "#f57c00"),
-                ("Boa drenagem + Úmido",          "+1,0 sc/ha", "#2e7d32"),
+                ("Poor drainage + Wet year",      "−4.0 sc/ha", "#c62828"),
+                ("Poor drainage + Normal year",   "−1.5 sc/ha", "#f57c00"),
+                ("Poor drainage + Dry year",      "+4.0 sc/ha", "#2e7d32"),
+                ("Moderate drainage + Wet",       "−1.5 sc/ha", "#f57c00"),
+                ("Good drainage + Wet",           "+1.0 sc/ha", "#2e7d32"),
             ],
         },
         {
-            "titulo": "Interação 3 — Janela de Plantio × ENSO (D1 × C7)",
+            "titulo": "Interaction 3 — Planting Window × ENSO (D1 × C7)",
             "cor": "#b35c00",
-            "desc": "Plantio tardio em ano de La Niña é a combinação mais arriscada: o enchimento de grão cai no pico do veranico. Em El Niño, plantar tarde tem menos consequências.",
+            "desc": "Late planting in a La Niña year is the riskiest combination: grain filling falls during peak dry spells. In El Niño, planting late has fewer consequences.",
             "linhas": [
-                ("Tardio + La Niña",  "−2,5 sc/ha", "#c62828"),
-                ("Tardio + El Niño",  "+1,0 sc/ha", "#2e7d32"),
-                ("Ótimo + El Niño",   "+1,0 sc/ha", "#2e7d32"),
-                ("Precoce + La Niña", "−1,0 sc/ha", "#f57c00"),
+                ("Late + La Niña",    "−2.5 sc/ha", "#c62828"),
+                ("Late + El Niño",    "+1.0 sc/ha", "#2e7d32"),
+                ("Optimal + El Niño", "+1.0 sc/ha", "#2e7d32"),
+                ("Early + La Niña",   "−1.0 sc/ha", "#f57c00"),
             ],
         },
     ]
@@ -524,12 +519,12 @@ def _render_step_6() -> None:
 
 
 def _render_step_7(result: dict | None) -> None:
-    _step_header(7, "Matriz de Payoff",
-        "Cada combinação de caminho × clima produz um valor de produtividade esperada")
+    _step_header(7, "Payoff Matrix",
+        "Each path × climate combination produces an expected yield value")
 
     if not result:
-        st.info("Rode uma simulação para ver a sua matriz de payoff aqui.")
-        _formula_box("Payoff[caminho i, clima j] = base_efetiva + D1ᵢ + D4ᵢ + D5ᵢ + chuvaⱼ + interações")
+        st.info("Run a simulation to see your payoff matrix here.")
+        _formula_box("Payoff[path i, climate j] = effective_base + D1ᵢ + D4ᵢ + D5ᵢ + rainⱼ + interactions")
         return
 
     paths  = result["paths"]
@@ -538,25 +533,25 @@ def _render_step_7(result: dict | None) -> None:
     ev_vals = result["criteria"]["bayes_ev"]["criterion_values"]
     opt_idx = result["criteria"]["bayes_ev"]["path_idx"]
 
-    _formula_box("Payoff[caminho i, clima j] = base_efetiva + D1ᵢ + D4ᵢ + D5ᵢ + chuvaⱼ + interações")
+    _formula_box("Payoff[path i, climate j] = effective_base + D1ᵢ + D4ᵢ + D5ᵢ + rainⱼ + interactions")
     st.markdown("<br>", unsafe_allow_html=True)
 
-    d1_s = {"Precoce (até 15/out)": "Precoce", "Ótima (16/out – 10/nov)": "Ótima", "Tardia (após 10/nov)": "Tardia"}
-    d4_s = {"Baixa (≤280k sementes/ha)": "Baixa", "Média (280k–340k)": "Média", "Alta (>340k)": "Alta"}
-    d5_s = {"Alto (≥3 fung. + monitor ferrugem)": "Intensivo", "Padrão (2 aplicações)": "Padrão", "Baixo (1 ou nenhuma)": "Reduzido"}
+    d1_s = {"Precoce (até 15/out)": "Early", "Ótima (16/out – 10/nov)": "Optimal", "Tardia (após 10/nov)": "Late"}
+    d4_s = {"Baixa (≤280k sementes/ha)": "Low", "Média (280k–340k)": "Medium", "Alta (>340k)": "High"}
+    d5_s = {"Alto (≥3 fung. + monitor ferrugem)": "Intensive", "Padrão (2 aplicações)": "Standard", "Baixo (1 ou nenhuma)": "Reduced"}
     rain_s = [s.split(" ")[0] for s in states]
 
     rows = []
     for i, path in enumerate(paths):
         row = {
             "#": i + 1,
-            "Janela": d1_s.get(path["d1"], path["d1"]),
-            "Dens.":  d4_s.get(path["d4"], path["d4"]),
-            "Manejo": d5_s.get(path["d5"], path["d5"]),
+            "Window": d1_s.get(path["d1"], path["d1"]),
+            "Density": d4_s.get(path["d4"], path["d4"]),
+            "Management": d5_s.get(path["d5"], path["d5"]),
         }
         for j, rs in enumerate(rain_s):
             row[rs] = matrix[i][j]
-        row["Prod. Esp."] = round(ev_vals[i], 1)
+        row["Exp. Yield"] = round(ev_vals[i], 1)
         rows.append(row)
 
     df = pd.DataFrame(rows).set_index("#")
@@ -570,44 +565,44 @@ def _render_step_7(result: dict | None) -> None:
     styled = (
         df.style
         .apply(_hl, axis=1)
-        .format({rs: "{:.1f}" for rs in rain_s} | {"Prod. Esp.": "{:.1f}"})
-        .background_gradient(subset=["Prod. Esp."], cmap="YlGn")
+        .format({rs: "{:.1f}" for rs in rain_s} | {"Exp. Yield": "{:.1f}"})
+        .background_gradient(subset=["Exp. Yield"], cmap="YlGn")
     )
     st.dataframe(styled, use_container_width=True, height=500)
-    st.caption(f"★ linha em verde = melhor caminho (Prod. Esp. = {ev_vals[opt_idx]:.1f} sc/ha) · Referência: {baseline} sc/ha")
+    st.caption(f"★ green row = best path (Exp. Yield = {ev_vals[opt_idx]:.1f} sc/ha) · Reference: {baseline} sc/ha")
 
     c1, c2, c3 = st.columns(3)
     with c1:
-        st.metric("Melhor resultado possível", f"{max(max(r) for r in matrix):.1f} sc/ha")
+        st.metric("Best possible outcome", f"{max(max(r) for r in matrix):.1f} sc/ha")
     with c2:
-        st.metric("Pior resultado possível", f"{min(min(r) for r in matrix):.1f} sc/ha")
+        st.metric("Worst possible outcome", f"{min(min(r) for r in matrix):.1f} sc/ha")
     with c3:
-        st.metric("Amplitude total", f"{max(max(r) for r in matrix) - min(min(r) for r in matrix):.1f} sc/ha")
+        st.metric("Total range", f"{max(max(r) for r in matrix) - min(min(r) for r in matrix):.1f} sc/ha")
 
 
 def _render_step_8(result: dict | None) -> None:
-    _step_header(8, "Critérios de Decisão",
-        "6 perspectivas diferentes para escolher o melhor caminho na matriz")
+    _step_header(8, "Decision Criteria",
+        "6 different perspectives for choosing the best path in the matrix")
 
     criterios = [
-        ("bayes_ev", "Melhor resultado esperado",
-         "Pondera cada resultado pela probabilidade do clima. É o critério principal — maximiza o valor esperado.",
-         "#1a5c38", "⭐ Principal"),
-        ("wald", "Mais seguro no pior cenário",
-         "Escolhe o caminho que garante o maior resultado mesmo no pior clima possível. Perfil conservador.",
-         "#1565c0", "🛡️ Conservador"),
-        ("maximax", "Máximo potencial produtivo",
-         "Escolhe o caminho com o maior resultado possível, ignorando o risco. Perfil otimista.",
-         "#b35c00", "🚀 Otimista"),
-        ("laplace", "Média entre todos os cenários",
-         "Trata todos os climas como igualmente prováveis. Referência sem viés.",
-         "#6b6b8a", "⚖️ Neutro"),
-        ("hurwicz", "Equilíbrio risco/oportunidade",
-         "Pondera 50% melhor caso + 50% pior caso. Compromisso entre otimismo e cautela.",
-         "#7b1fa2", "🎯 Equilibrado"),
-        ("savage", "Menor arrependimento possível",
-         "Minimiza o quanto o produtor perderia por não ter escolhido a estratégia ótima em cada clima.",
-         "#c62828", "😌 Sem arrependimento"),
+        ("bayes_ev", "Best expected outcome",
+         "Weights each outcome by its climate probability. The primary criterion — maximizes expected value.",
+         "#1a5c38", "⭐ Primary"),
+        ("wald", "Safest in worst case",
+         "Selects the path guaranteeing the highest outcome even in the worst possible climate. Conservative profile.",
+         "#1565c0", "🛡️ Conservative"),
+        ("maximax", "Maximum yield potential",
+         "Selects the path with the highest possible outcome, ignoring risk. Optimistic profile.",
+         "#b35c00", "🚀 Optimistic"),
+        ("laplace", "Average across all scenarios",
+         "Treats all climates as equally likely. An unbiased reference.",
+         "#6b6b8a", "⚖️ Neutral"),
+        ("hurwicz", "Risk/opportunity balance",
+         "Weights 50% best case + 50% worst case. Compromise between optimism and caution.",
+         "#7b1fa2", "🎯 Balanced"),
+        ("savage", "Minimum regret",
+         "Minimizes how much the producer would lose by not having chosen the optimal strategy for each climate.",
+         "#c62828", "😌 No regret"),
     ]
 
     c_left, c_right = st.columns(2, gap="large")
@@ -624,8 +619,8 @@ def _render_step_8(result: dict | None) -> None:
                 paths = result["paths"]
                 if winner_idx is not None:
                     p = paths[winner_idx]
-                    d1_s = {"Precoce (até 15/out)": "Precoce", "Ótima (16/out – 10/nov)": "Ótima", "Tardia (após 10/nov)": "Tardia"}
-                    d5_s = {"Alto (≥3 fung. + monitor ferrugem)": "Intensivo", "Padrão (2 aplicações)": "Padrão", "Baixo (1 ou nenhuma)": "Reduzido"}
+                    d1_s = {"Precoce (até 15/out)": "Early", "Ótima (16/out – 10/nov)": "Optimal", "Tardia (após 10/nov)": "Late"}
+                    d5_s = {"Alto (≥3 fung. + monitor ferrugem)": "Intensive", "Padrão (2 aplicações)": "Standard", "Baixo (1 ou nenhuma)": "Reduced"}
                     winner_label = f"{d1_s.get(p['d1'], p['d1'])} · {d5_s.get(p['d5'], p['d5'])}"
 
             st.markdown(f"""
@@ -646,35 +641,35 @@ def _render_step_8(result: dict | None) -> None:
         opt_idx = result["criteria"]["bayes_ev"]["path_idx"]
         all_same = all(result["criteria"][k]["path_idx"] == opt_idx for k in ["bayes_ev", "wald", "laplace"])
         if all_same:
-            st.success("✓ Todos os principais critérios apontam para o mesmo caminho — recomendação robusta.")
+            st.success("✓ All primary criteria point to the same path — robust recommendation.")
         else:
-            st.info("ℹ️ Critérios diferentes apontam para caminhos diferentes — o modelo usa Bayes EV como primário.")
+            st.info("ℹ️ Different criteria point to different paths — the model uses Bayes EV as the primary criterion.")
 
 
 def _render_step_9(result: dict | None) -> None:
-    _step_header(9, "Análise de Risco",
-        "10.000 simulações por caminho estimam o intervalo de confiança da produtividade")
+    _step_header(9, "Risk Analysis",
+        "10,000 simulations per path estimate the yield confidence interval")
 
     c_explain, c_result = st.columns([1, 1], gap="large")
 
     with c_explain:
-        _info_card("Como funciona o Monte Carlo",
-            "Para cada caminho, o modelo sorteia 10.000 cenários onde D2 (cultivar), "
-            "D3 (TSI) e D6 (plantadeira) variam aleatoriamente — porque mesmo com uma "
-            "escolha feita, o resultado real pode variar por condições de execução, "
-            "qualidade do lote de sementes, resposta do campo etc.")
+        _info_card("How Monte Carlo works",
+            "For each path, the model draws 10,000 scenarios where D2 (cultivar), "
+            "D3 (seed treatment) and D6 (planter) vary randomly — because even with a "
+            "choice made, the actual result can vary due to execution conditions, "
+            "seed lot quality, field response, etc.")
 
         st.markdown("<br>", unsafe_allow_html=True)
 
         st.markdown("""
         <div style="background:#ffffff;border:1.5px solid #c4c4d4;border-radius:10px;padding:16px;box-shadow:0 2px 8px rgba(0,0,0,0.08)">
-            <div style="font-size:0.7rem;font-weight:700;color:#4a4a6a;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:10px">Variáveis estocásticas</div>
+            <div style="font-size:0.7rem;font-weight:700;color:#4a4a6a;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:10px">Stochastic variables</div>
         """, unsafe_allow_html=True)
         for var, dist in [
-            ("D2 · Cultivar",    "Triangular(−8, 0, +6)"),
-            ("D3 · TSI",         "Triangular(−5, 0, +3)"),
-            ("D6 · Plantadeira", "Triangular(−4, 0, +3)"),
-            ("Chuva R3–R6",      "Discreta por P(chuva|ENSO)"),
+            ("D2 · Cultivar",        "Triangular(−8, 0, +6)"),
+            ("D3 · Seed Treatment",  "Triangular(−5, 0, +3)"),
+            ("D6 · Planter",         "Triangular(−4, 0, +3)"),
+            ("Rainfall R3–R6",       "Discrete by P(rain|ENSO)"),
         ]:
             st.markdown(f"""
             <div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #f0f0f0;font-size:0.78rem">
@@ -689,22 +684,22 @@ def _render_step_9(result: dict | None) -> None:
             opt_idx = result["criteria"]["bayes_ev"]["path_idx"]
             mc = result["paths"][opt_idx].get("mc") or {}
             if mc:
-                st.markdown("**Distribuição simulada — melhor caminho:**")
+                st.markdown("**Simulated distribution — best path:**")
                 import numpy as np
                 rng = np.random.default_rng(42)
                 sim_yields = rng.normal(mc["mean"], mc["std"], 500)
                 fig = go.Figure()
                 fig.add_histogram(x=sim_yields, nbinsx=30, marker_color="#2d8a56",
-                                  opacity=0.75, name="Simulações")
+                                  opacity=0.75, name="Simulations")
                 fig.add_vline(x=mc["p5"],  line_dash="dot", line_color="#c62828",
                               annotation_text=f"P5: {mc['p5']:.0f}", annotation_position="top left")
                 fig.add_vline(x=mc["p95"], line_dash="dot", line_color="#1565c0",
                               annotation_text=f"P95: {mc['p95']:.0f}", annotation_position="top right")
                 fig.add_vline(x=mc["mean"], line_dash="solid", line_color="#1a5c38",
-                              annotation_text=f"Média: {mc['mean']:.0f}", annotation_position="top right")
+                              annotation_text=f"Mean: {mc['mean']:.0f}", annotation_position="top right")
                 fig.update_layout(height=280, margin=dict(l=20, r=20, t=30, b=30),
                                   plot_bgcolor="white", paper_bgcolor="white", showlegend=False,
-                                  xaxis_title="sc/ha", yaxis_title="Frequência",
+                                  xaxis_title="sc/ha", yaxis_title="Frequency",
                                   xaxis=dict(gridcolor="#d8d8e8", tickfont=dict(color="#1a1a2e", size=11),
                                              title_font=dict(color="#1a1a2e")),
                                   yaxis=dict(gridcolor="#d8d8e8", tickfont=dict(color="#1a1a2e", size=11),
@@ -714,50 +709,50 @@ def _render_step_9(result: dict | None) -> None:
 
                 c_p5, c_mean, c_p95 = st.columns(3)
                 with c_p5:
-                    st.metric("P5 (pior 5%)", f"{mc['p5']:.0f} sc/ha")
+                    st.metric("P5 (worst 5%)", f"{mc['p5']:.0f} sc/ha")
                 with c_mean:
-                    st.metric("Média", f"{mc['mean']:.0f} sc/ha")
+                    st.metric("Mean", f"{mc['mean']:.0f} sc/ha")
                 with c_p95:
-                    st.metric("P95 (melhor 5%)", f"{mc['p95']:.0f} sc/ha")
+                    st.metric("P95 (best 5%)", f"{mc['p95']:.0f} sc/ha")
 
                 risk = mc.get("p_below", 0)
                 risk_color = "🔴" if risk > 0.25 else "🟡" if risk > 0.10 else "🟢"
                 st.markdown(f"""
                 <div style="background:#f8f9fa;border-radius:8px;padding:12px 16px;margin-top:8px;font-size:0.84rem">
-                    {risk_color} <strong>{risk:.0%} de chance</strong> de ficar abaixo da referência de 60 sc/ha
+                    {risk_color} <strong>{risk:.0%} chance</strong> of falling below the 60 sc/ha reference
                 </div>
                 """, unsafe_allow_html=True)
         else:
-            st.info("Rode uma simulação para ver a distribuição do Monte Carlo aqui.")
-            _info_card("O que o resultado mostra",
-                "P5 = em 95% das simulações, a produtividade ficou acima desse valor\n"
-                "P95 = em 95% das simulações, a produtividade ficou abaixo desse valor\n"
-                "A faixa P5–P95 é o intervalo de 90% de confiança.")
+            st.info("Run a simulation to see the Monte Carlo distribution here.")
+            _info_card("What the results show",
+                "P5 = in 95% of simulations, yield exceeded this value\n"
+                "P95 = in 95% of simulations, yield stayed below this value\n"
+                "The P5–P95 range is the 90% confidence interval.")
 
 
 def _render_step_10(result: dict | None) -> None:
-    _step_header(10, "Recomendação Final",
-        "O modelo combina todos os passos anteriores para apontar a estratégia com maior retorno esperado")
+    _step_header(10, "Final Recommendation",
+        "The model combines all previous steps to identify the strategy with the highest expected return")
 
     _formula_box(
-        "Recomendação = argmax<sub>i</sub> Σⱼ [ Payoff(i,j) + Interações(i,j) ] × P(chuvaⱼ | ENSO)"
+        "Recommendation = argmax<sub>i</sub> Σⱼ [ Payoff(i,j) + Interactions(i,j) ] × P(rainⱼ | ENSO)"
     )
 
     st.markdown("<br>", unsafe_allow_html=True)
 
-    st.markdown("**Pipeline completo — do campo à recomendação:**")
+    st.markdown("**Complete pipeline — from field to recommendation:**")
 
     pipeline = [
-        ("60 sc/ha", "Baseline CONAB", "#e8f5e9", "#1a5c38"),
-        ("+ Contexto", "C1–C7 · solo, região, clima", "#e3f2fd", "#1565c0"),
-        ("+ Decisões fixas", "D2 · D3 · D6", "#fff8e1", "#b35c00"),
-        ("× 27 caminhos", "D1 × D4 × D5", "#f3e5f5", "#7b1fa2"),
-        ("× 3 climas", "Seca · Normal · Úmida por ENSO", "#e0f2f1", "#00695c"),
-        ("+ Interações", "3 termos de amplificação", "#fce4ec", "#c62828"),
-        ("→ Matriz 27×3", "81 resultados possíveis", "#fff3e0", "#e65100"),
-        ("→ Bayes EV", "Ponderação pelas probabilidades", "#e8f5e9", "#1a5c38"),
-        ("→ Monte Carlo", "10.000 sim. · P5/P95", "#e3f2fd", "#1565c0"),
-        ("🎯 Recomendação", "Melhor estratégia para o seu talhão", "#1a5c38", "#ffffff"),
+        ("60 sc/ha",         "CONAB Baseline",                    "#e8f5e9", "#1a5c38"),
+        ("+ Context",        "C1–C7 · soil, region, climate",     "#e3f2fd", "#1565c0"),
+        ("+ Fixed decisions","D2 · D3 · D6",                      "#fff8e1", "#b35c00"),
+        ("× 27 paths",       "D1 × D4 × D5",                      "#f3e5f5", "#7b1fa2"),
+        ("× 3 climates",     "Dry · Normal · Wet by ENSO",         "#e0f2f1", "#00695c"),
+        ("+ Interactions",   "3 amplification terms",              "#fce4ec", "#c62828"),
+        ("→ 27×3 Matrix",    "81 possible outcomes",               "#fff3e0", "#e65100"),
+        ("→ Bayes EV",       "Probability-weighted scoring",        "#e8f5e9", "#1a5c38"),
+        ("→ Monte Carlo",    "10,000 sim. · P5/P95",               "#e3f2fd", "#1565c0"),
+        ("🎯 Recommendation","Best strategy for your field",        "#1a5c38", "#ffffff"),
     ]
 
     cols_pipe = st.columns(5)
@@ -774,7 +769,7 @@ def _render_step_10(result: dict | None) -> None:
 
     if result:
         st.markdown("<br>", unsafe_allow_html=True)
-        st.markdown("**Resultado da sua simulação:**")
+        st.markdown("**Your simulation result:**")
 
         opt_idx  = result["criteria"]["bayes_ev"]["path_idx"]
         opt_path = result["paths"][opt_idx]
@@ -782,49 +777,49 @@ def _render_step_10(result: dict | None) -> None:
         baseline = result["baseline"]
         mc       = opt_path.get("mc") or {}
 
-        d1_s = {"Precoce (até 15/out)": "Precoce", "Ótima (16/out – 10/nov)": "Ótima", "Tardia (após 10/nov)": "Tardia"}
-        d4_s = {"Baixa (≤280k sementes/ha)": "Baixa", "Média (280k–340k)": "Média", "Alta (>340k)": "Alta"}
-        d5_s = {"Alto (≥3 fung. + monitor ferrugem)": "Intensivo", "Padrão (2 aplicações)": "Padrão", "Baixo (1 ou nenhuma)": "Reduzido"}
+        d1_s = {"Precoce (até 15/out)": "Early", "Ótima (16/out – 10/nov)": "Optimal", "Tardia (após 10/nov)": "Late"}
+        d4_s = {"Baixa (≤280k sementes/ha)": "Low", "Média (280k–340k)": "Medium", "Alta (>340k)": "High"}
+        d5_s = {"Alto (≥3 fung. + monitor ferrugem)": "Intensive", "Padrão (2 aplicações)": "Standard", "Baixo (1 ou nenhuma)": "Reduced"}
 
         delta = opt_ev - baseline
         st.markdown(f"""
         <div style="background:linear-gradient(135deg,#0d2b18,#1a5c38);border-radius:12px;
                     padding:28px 32px;color:#fff;margin-top:8px">
             <div style="font-size:0.7rem;font-weight:700;color:#76c442;text-transform:uppercase;
-                        letter-spacing:0.12em;margin-bottom:10px">🎯 Recomendação Principal</div>
+                        letter-spacing:0.12em;margin-bottom:10px">🎯 Primary Recommendation</div>
             <div style="display:flex;gap:40px;flex-wrap:wrap">
                 <div>
-                    <div style="font-size:0.7rem;color:rgba(255,255,255,0.6)">Janela de Plantio</div>
+                    <div style="font-size:0.7rem;color:rgba(255,255,255,0.6)">Planting Window</div>
                     <div style="font-size:1rem;font-weight:700">{d1_s.get(opt_path["d1"], opt_path["d1"])}</div>
                 </div>
                 <div>
-                    <div style="font-size:0.7rem;color:rgba(255,255,255,0.6)">Densidade</div>
+                    <div style="font-size:0.7rem;color:rgba(255,255,255,0.6)">Density</div>
                     <div style="font-size:1rem;font-weight:700">{d4_s.get(opt_path["d4"], opt_path["d4"])}</div>
                 </div>
                 <div>
-                    <div style="font-size:0.7rem;color:rgba(255,255,255,0.6)">Manejo de Doenças</div>
+                    <div style="font-size:0.7rem;color:rgba(255,255,255,0.6)">Disease Management</div>
                     <div style="font-size:1rem;font-weight:700">{d5_s.get(opt_path["d5"], opt_path["d5"])}</div>
                 </div>
                 <div>
-                    <div style="font-size:0.7rem;color:rgba(255,255,255,0.6)">Prod. Esperada</div>
+                    <div style="font-size:0.7rem;color:rgba(255,255,255,0.6)">Expected Yield</div>
                     <div style="font-size:1.6rem;font-weight:900;color:#76c442">{opt_ev:.1f} sc/ha</div>
-                    <div style="font-size:0.75rem;color:rgba(255,255,255,0.7)">{delta:+.1f} sc/ha vs. referência</div>
+                    <div style="font-size:0.75rem;color:rgba(255,255,255,0.7)">{delta:+.1f} sc/ha vs. reference</div>
                 </div>
-                {f'<div><div style="font-size:0.7rem;color:rgba(255,255,255,0.6)">Intervalo 90%</div><div style="font-size:0.92rem;font-weight:600">{mc["p5"]:.0f} – {mc["p95"]:.0f} sc/ha</div></div>' if mc else ""}
+                {f'<div><div style="font-size:0.7rem;color:rgba(255,255,255,0.6)">90% Interval</div><div style="font-size:0.92rem;font-weight:600">{mc["p5"]:.0f} – {mc["p95"]:.0f} sc/ha</div></div>' if mc else ""}
             </div>
         </div>
         """, unsafe_allow_html=True)
 
         st.markdown("<br>", unsafe_allow_html=True)
-        if st.button("Ver resultados completos →", type="primary"):
+        if st.button("View full results →", type="primary"):
             nav_go("results")
     else:
-        st.info("Rode uma simulação para ver a recomendação final aqui.")
-        if st.button("Ir para Nova Simulação →", type="primary"):
+        st.info("Run a simulation to see the final recommendation here.")
+        if st.button("Go to New Simulation →", type="primary"):
             nav_go("input")
 
 
-# ── CSS específico do painel ──────────────────────────────────────────────────
+# ── Explainer-specific CSS ────────────────────────────────────────────────────
 
 _EXPLAINER_CSS = """
 <style>
@@ -868,23 +863,23 @@ _EXPLAINER_CSS = """
 """
 
 
-# ── Render principal ──────────────────────────────────────────────────────────
+# ── Main render ───────────────────────────────────────────────────────────────
 
 def render() -> None:
     st.markdown(_EXPLAINER_CSS, unsafe_allow_html=True)
 
     result = st.session_state.get("sim_result")
 
-    st.markdown('<div class="page-title">Como o Simulador Calcula</div>', unsafe_allow_html=True)
+    st.markdown('<div class="page-title">How We Calculate</div>', unsafe_allow_html=True)
     st.markdown(
-        '<div class="page-subtitle">Entenda cada etapa do modelo — do baseline à recomendação final</div>',
+        '<div class="page-subtitle">Understand each step of the model — from baseline to final recommendation</div>',
         unsafe_allow_html=True,
     )
 
     if result:
-        st.caption("✓ Usando dados da sua última simulação")
+        st.caption("✓ Using data from your last simulation")
     else:
-        st.caption("ℹ️ Rode uma simulação para ver seus dados reais em cada etapa")
+        st.caption("ℹ️ Run a simulation to see your real data at each step")
 
     st.markdown("<br>", unsafe_allow_html=True)
 
@@ -892,7 +887,6 @@ def render() -> None:
     _progress_bar(current)
     st.markdown("---")
 
-    # Roteador de passos
     step_map = {
         1:  lambda: _render_step_1(),
         2:  lambda: _render_step_2(result),

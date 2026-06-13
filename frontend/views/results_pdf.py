@@ -32,31 +32,31 @@ def _build_pdf(
     pdf.set_font("Helvetica", "B", 20)
     pdf.set_text_color(255, 255, 255)
     pdf.set_xy(0, 16)
-    pdf.cell(210, 10, "Relatório de Simulação de Safra", align="C")
+    pdf.cell(210, 10, "Crop Simulation Report", align="C")
 
     pdf.set_font("Helvetica", "", 11)
     pdf.set_text_color(180, 230, 160)
     pdf.set_xy(0, 30)
-    pdf.cell(210, 8, "Soja Verão · Mato Grosso", align="C")
+    pdf.cell(210, 8, "Soy . Mato Grosso", align="C")
 
     pdf.set_text_color(50, 50, 50)
     pdf.set_xy(18, 72)
     pdf.set_font("Helvetica", "", 10)
-    pdf.cell(0, 7, f"Produtor: {user_name}")
+    pdf.cell(0, 7, f"Producer: {user_name}")
     pdf.ln(7)
     pdf.set_x(18)
-    pdf.cell(0, 7, f"Data: {datetime.now().strftime('%d/%m/%Y %H:%M')}")
+    pdf.cell(0, 7, f"Date: {datetime.now().strftime('%d/%m/%Y %H:%M')}")
     pdf.ln(7)
-    region = _pdf_safe(display.get("Região", "-"))
+    region = _pdf_safe(display.get("Region", "-"))
     pdf.set_x(18)
-    pdf.cell(0, 7, _pdf_safe(f"Região: {region}"))
+    pdf.cell(0, 7, _pdf_safe(f"Region: {region}"))
 
     # ── Resumo Executivo ──────────────────────────────────────────────────────
     pdf.ln(16)
     pdf.set_x(18)
     pdf.set_font("Helvetica", "B", 13)
     pdf.set_text_color(13, 43, 24)
-    pdf.cell(0, 8, "1. Resumo Executivo")
+    pdf.cell(0, 8, "1. Executive Summary")
     pdf.ln(10)
 
     pdf.set_font("Helvetica", "", 10)
@@ -69,13 +69,13 @@ def _build_pdf(
     mc_opt    = optimal_path.get("mc") or {}
 
     summary_lines = [
-        "A simulação identificou a melhor combinação de manejo para o seu talhão.",
-        f"Recomendação principal: {rec_d1}, {rec_d4.lower()}, {rec_d5.lower()}.",
-        f"Produtividade esperada: {optimal_ev:.1f} sc/ha ({delta_str} sc/ha vs. referência de {baseline:.0f} sc/ha).",
+        "The simulation identified the best management combination for your field.",
+        f"Main recommendation: {rec_d1}, {rec_d4.lower()}, {rec_d5.lower()}.",
+        f"Expected yield: {optimal_ev:.1f} sc/ha ({delta_str} sc/ha vs. reference of {baseline:.0f} sc/ha).",
     ]
     if mc_opt:
         summary_lines.append(
-            f"Intervalo de confiança (90%): {mc_opt['p5']:.0f} a {mc_opt['p95']:.0f} sc/ha."
+            f"Confidence interval (90%): {mc_opt['p5']:.0f} to {mc_opt['p95']:.0f} sc/ha."
         )
     for line in summary_lines:
         pdf.set_x(18)
@@ -87,17 +87,17 @@ def _build_pdf(
     pdf.set_x(18)
     pdf.set_font("Helvetica", "B", 13)
     pdf.set_text_color(13, 43, 24)
-    pdf.cell(0, 8, "2. Contexto da Lavoura")
+    pdf.cell(0, 8, "2. Field Context")
     pdf.ln(10)
 
     ctx_rows = [
-        ("Regiao",             display.get("Região", "-")),
-        ("Textura do Solo",    display.get("Textura", "-")),
-        ("pH do Solo",         display.get("pH", "-")),
-        ("Drenagem",           display.get("Drenagem", "-")),
-        ("Tipo de Solo",       display.get("Tipo de Solo", "-")),
-        ("Area Plantada",      display.get("Área", "-")),
-        ("Previsao Climatica", display.get("Previsão Climática", "-")),
+        ("Region",             display.get("Region", "-")),
+        ("Soil Texture",       display.get("Texture", "-")),
+        ("Soil pH",            display.get("pH", "-")),
+        ("Drainage",           display.get("Drainage", "-")),
+        ("Soil Type",          display.get("Soil Type", "-")),
+        ("Planted Area",       display.get("Area", "-")),
+        ("Climate Forecast",   display.get("Climate Forecast", "-")),
     ]
     pdf.set_font("Helvetica", "", 9)
     for k, v in ctx_rows:
@@ -112,7 +112,7 @@ def _build_pdf(
     pdf.set_font("Helvetica", "B", 13)
     pdf.set_text_color(13, 43, 24)
     pdf.set_xy(18, 18)
-    pdf.cell(0, 8, "3. Top 3 Recomendações")
+    pdf.cell(0, 8, "3. Top 3 Recommendations")
     pdf.ln(12)
 
     ranked = sorted(enumerate(paths), key=lambda x: ev_vals[x[0]], reverse=True)[:3]
@@ -131,13 +131,13 @@ def _build_pdf(
         pdf.set_text_color(40, 40, 40)
         pdf.set_x(18)
         delta_str2 = f"+{delta:.1f}" if delta >= 0 else f"{delta:.1f}"
-        pdf.cell(90, 6, _pdf_safe(f"Produtividade esperada: {ev:.1f} sc/ha ({delta_str2} sc/ha)"))
+        pdf.cell(90, 6, _pdf_safe(f"Expected yield: {ev:.1f} sc/ha ({delta_str2} sc/ha)"))
         pdf.ln(7)
         if mc:
             pdf.set_x(18)
             pdf.cell(0, 6, _pdf_safe(
-                f"Intervalo 90%: {mc['p5']:.0f} a {mc['p95']:.0f} sc/ha  |  "
-                f"Risco abaixo da referencia: {mc['p_below']:.1%}"
+                f"90% interval: {mc['p5']:.0f} to {mc['p95']:.0f} sc/ha  |  "
+                f"Risk below reference: {mc['p_below']:.1%}"
             ))
             pdf.ln(7)
 
@@ -160,27 +160,27 @@ def _build_pdf(
     pdf.set_xy(18, 18)
     pdf.set_font("Helvetica", "B", 13)
     pdf.set_text_color(13, 43, 24)
-    pdf.cell(0, 8, "4. Como o Simulador Calcula")
+    pdf.cell(0, 8, "4. How the Simulator Calculates")
     pdf.ln(12)
 
     pdf.set_font("Helvetica", "", 10)
     pdf.set_text_color(40, 40, 40)
     metodologia = [
-        ("Referência regional:",
-         f"O modelo parte de {baseline:.0f} sc/ha, produtividade média histórica para soja "
-         "no Mato Grosso (fonte CONAB 2023/24)."),
-        ("Ajuste pelo contexto do campo:",
-         "Região, tipo e textura do solo, pH, drenagem, tamanho da área e previsão climática "
-         "ajustam a referência para cima ou para baixo, refletindo o potencial real do seu talhão."),
-        ("Avaliação das decisões de manejo:",
-         "Janela de plantio, densidade, manejo de doenças, cultivar, tratamento de sementes e "
-         "tecnologia da plantadeira são avaliados em diferentes combinações."),
-        ("Cenários climáticos:",
-         "O simulador considera três cenários de chuva no período crítico (seca, normal e úmida), "
-         "com probabilidades baseadas na previsão de El Niño/La Niña informada."),
-        ("Análise de risco (Monte Carlo):",
-         "São rodadas 1.000 simulações com variações estocásticas nos insumos para estimar o "
-         "intervalo de produtividade esperada com 90% de confiança."),
+        ("Regional reference:",
+         f"The model starts from {baseline:.0f} sc/ha, the historical average yield for soy "
+         "in Mato Grosso (source: CONAB 2023/24)."),
+        ("Field context adjustment:",
+         "Region, soil type and texture, pH, drainage, area size, and climate forecast "
+         "adjust the reference up or down, reflecting the true potential of your field."),
+        ("Management decision evaluation:",
+         "Planting window, density, disease management, cultivar, seed treatment, and "
+         "planter technology are evaluated across different combinations."),
+        ("Climate scenarios:",
+         "The simulator considers three rainfall scenarios during the critical period (dry, normal, and wet), "
+         "with probabilities based on the El Nino/La Nina forecast provided."),
+        ("Risk analysis (Monte Carlo):",
+         "1,000 simulations are run with stochastic input variations to estimate the "
+         "expected yield interval with 90% confidence."),
     ]
     for titulo, descricao in metodologia:
         pdf.set_x(18)
@@ -197,19 +197,19 @@ def _build_pdf(
     pdf.set_x(18)
     pdf.set_font("Helvetica", "B", 13)
     pdf.set_text_color(13, 43, 24)
-    pdf.cell(0, 8, "5. Glossário")
+    pdf.cell(0, 8, "5. Glossary")
     pdf.ln(10)
     glossario = [
-        ("sc/ha",             "Sacas de 60 kg por hectare - unidade de produtividade."),
-        ("Janela de plantio", "Periodo ideal de semeadura para o desenvolvimento otimo da cultura."),
-        ("TSI",               "Tratamento de Sementes Industrial - aplicacao de fungicida, inseticida, nematicida e inoculante antes do plantio."),
-        ("ENSO",              "El Nino-Oscilacao Sul - fenomeno climatico que influencia as chuvas no Centro-Oeste."),
-        ("R3-R6",             "Fases de floracao ao enchimento de grao - periodo mais critico para a produtividade."),
-        ("P5 / P95",          "Percentis 5 e 95 da distribuicao de resultados - limites do intervalo de 90% de confianca."),
-        ("Monte Carlo",       "Metodo de simulacao com milhares de cenarios e variacoes aleatorias para estimar a distribuicao de resultados."),
-        ("Latossolo",         "Solo argiloso e bem estruturado, comum no Cerrado - excelente drenagem interna, ideal para soja."),
-        ("Ferrugem asiatica", "Principal doenca fungica da soja no MT; exige monitoramento e fungicidas preventivos."),
-        ("EV / Bayes",        "Valor esperado: media ponderada pelos cenarios climaticos - criterio principal de recomendacao."),
+        ("sc/ha",             "60 kg bags per hectare - the standard yield unit."),
+        ("Planting window",   "Optimal sowing period for the best crop development."),
+        ("TSI",               "Industrial Seed Treatment - application of fungicide, insecticide, nematicide, and inoculant before planting."),
+        ("ENSO",              "El Nino-Southern Oscillation - climate phenomenon that influences rainfall in the Center-West."),
+        ("R3-R6",             "Flowering to grain-filling stages - the most critical period for yield."),
+        ("P5 / P95",          "5th and 95th percentiles of the results distribution - bounds of the 90% confidence interval."),
+        ("Monte Carlo",       "Simulation method using thousands of scenarios with random variations to estimate the distribution of results."),
+        ("Latosol",           "Clay-rich, well-structured soil common in the Cerrado - excellent internal drainage, ideal for soy."),
+        ("Asian rust",        "Main fungal disease of soy in MT; requires monitoring and preventive fungicides."),
+        ("EV / Bayes",        "Expected value: weighted average across climate scenarios - the main recommendation criterion."),
     ]
     pdf.set_font("Helvetica", "", 9)
     pdf.set_text_color(40, 40, 40)

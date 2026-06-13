@@ -76,8 +76,8 @@ body{{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgro
 <div class="foot" id="foot"></div>
 </div>
 <script>
-const MN=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
-const DW=['Seg','Ter','Qua','Qui','Sex','Sáb','Dom'];
+const MN=['January','February','March','April','May','June','July','August','September','October','November','December'];
+const DW=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 const MINDT=new Date(2026,8,1), MAXDT=new Date(2026,11,15);
 let cy={init_y}, cm={init_m}-1;
 let ss=pi('{s_iso}'), se=pi('{e_iso}');
@@ -105,7 +105,7 @@ function push(){{
 }}
 function janela(d){{
   const p=new Date(2026,9,15),o=new Date(2026,10,10);
-  return d<=p?'Precoce':d<=o?'Ótima':'Tardia';
+  return d<=p?'Early':d<=o?'Optimal':'Late';
 }}
 function render(){{
   document.getElementById('ttl').textContent=MN[cm]+' '+cy;
@@ -134,12 +134,12 @@ function render(){{
   const ft=document.getElementById('foot');
   if(ss&&se){{
     const mid=new Date(ss.getTime()+(se-ss)/2);const j=janela(mid);
-    const jc=j==='Ótima'?'#2e7d32':j==='Precoce'?'#f57c00':'#c62828';
+    const jc=j==='Optimal'?'#2e7d32':j==='Early'?'#f57c00':'#c62828';
     const fs=pad(ss.getDate())+'/'+MN[ss.getMonth()].substr(0,3);
     const fe=pad(se.getDate())+'/'+MN[se.getMonth()].substr(0,3);
-    ft.innerHTML='<span class="badge" style="background:'+jc+'">📅 '+fs+' a '+fe+' → '+j+'</span>';
-  }}else if(ss){{ft.textContent='Clique para definir o fim do período';}}
-  else{{ft.textContent='Selecione a data de início do plantio';}}
+    ft.innerHTML='<span class="badge" style="background:'+jc+'">📅 '+fs+' to '+fe+' → '+j+'</span>';
+  }}else if(ss){{ft.textContent='Click to set the end of the period';}}
+  else{{ft.textContent='Select the planting start date';}}
 }}
 render();
 </script></body></html>"""
@@ -152,45 +152,45 @@ _C1_OPTIONS = {
     "Primavera do Leste, Querência":          "Desafiadora (Primavera Leste, Querência)",
 }
 _C2_OPTIONS = {
-    "Argilosa — mais de 35% argila":          "Favorável (argilosa / média bem estruturada)",
-    "Média — 20 a 35% argila":               "Intermediária (textura média)",
-    "Arenosa — menos de 20% argila":         "Desafiadora (arenosa / baixa retenção)",
+    "Clay — more than 35% clay":              "Favorável (argilosa / média bem estruturada)",
+    "Loam — 20 to 35% clay":                 "Intermediária (textura média)",
+    "Sandy — less than 20% clay":            "Desafiadora (arenosa / baixa retenção)",
 }
 _C3_OPTIONS = {
-    "pH entre 5,5 e 6,5":                   "Adequado (5,5 – 6,5)",
-    "pH entre 5,0–5,4 ou 6,6–6,8":          "Limítrofe (5,0–5,4 ou 6,6–6,8)",
-    "pH abaixo de 5,0 ou acima de 6,8":     "Crítico (<5,0 ou >6,8)",
+    "pH between 5.5 and 6.5":               "Adequado (5,5 – 6,5)",
+    "pH between 5.0–5.4 or 6.6–6.8":        "Limítrofe (5,0–5,4 ou 6,6–6,8)",
+    "pH below 5.0 or above 6.8":            "Crítico (<5,0 ou >6,8)",
 }
 _C4_OPTIONS = {
-    "Sem encharcamento":                     "Boa (bem drenado)",
-    "Com alagamentos ocasionais":            "Moderada (moderadamente/imperfeito)",
-    "Com alagamentos frequentes":            "Ruim (mal / excessivamente drenado)",
+    "No waterlogging":                       "Boa (bem drenado)",
+    "With occasional flooding":              "Moderada (moderadamente/imperfeito)",
+    "With frequent flooding":                "Ruim (mal / excessivamente drenado)",
 }
 _C5_OPTIONS = {
-    "Latossolo ou Nitossolo":                "Alta (Latossolo, Nitossolo)",
-    "Argissolo ou Cambissolo":               "Média (Argissolo, Cambissolo)",
-    "Neossolo ou Gleissolo":                 "Baixa (Neossolo, Gleissolo)",
+    "Latosol or Nitosol":                    "Alta (Latossolo, Nitossolo)",
+    "Argisol or Cambisol":                   "Média (Argissolo, Cambissolo)",
+    "Neosol or Gleysol":                     "Baixa (Neossolo, Gleissolo)",
 }
 _C6_OPTIONS = {
-    "Até 50 hectares":                       "Pequena (≤50 ha)",
-    "Entre 50 e 200 hectares":              "Média (50–200 ha)",
-    "Acima de 200 hectares":                "Grande (>200 ha)",
+    "Up to 50 hectares":                     "Pequena (≤50 ha)",
+    "Between 50 and 200 hectares":           "Média (50–200 ha)",
+    "Above 200 hectares":                    "Grande (>200 ha)",
 }
 _C7_OPTIONS = {
-    "El Niño — previsão de chuvas regulares no MT":  "El Niño (chuva regular em MT)",
-    "Condições neutras — sem previsão definida":      "Neutro",
-    "La Niña — previsão de veranicos prolongados":    "La Niña (chuva concentrada/curta)",
+    "El Niño — forecast of regular rainfall in MT":   "El Niño (chuva regular em MT)",
+    "Neutral conditions — no defined forecast":        "Neutro",
+    "La Niña — forecast of prolonged dry spells":      "La Niña (chuva concentrada/curta)",
 }
 
 _D2_OPTIONS = {
-    "P98R30, NK6727 ou BMX Foco (lançamentos pós-2020)": "Alto potencial (P98R30, NK6727, BMX Foco; pós-2020)",
-    "Cultivar lançado entre 2015 e 2019":                "Intermediário (2015–2019)",
-    "Cultivar lançado antes de 2015":                    "Limitado (legados pré-2015)",
+    "P98R30, NK6727 or BMX Foco (post-2020 releases)": "Alto potencial (P98R30, NK6727, BMX Foco; pós-2020)",
+    "Cultivar released between 2015 and 2019":          "Intermediário (2015–2019)",
+    "Cultivar released before 2015":                    "Limitado (legados pré-2015)",
 }
 _D6_OPTIONS = {
-    "Alta precisão — RTK, plantadeira pneumática":         "Alta precisão (RTK + pneumática moderna)",
-    "Precisão padrão — espaçamento controlado":            "Padrão",
-    "Baixa precisão — espaçamento irregular":              "Baixa (espaçamento irregular)",
+    "High precision — RTK, pneumatic planter":           "Alta precisão (RTK + pneumática moderna)",
+    "Standard precision — controlled spacing":           "Padrão",
+    "Low precision — irregular spacing":                 "Baixa (espaçamento irregular)",
 }
 
 # Limites da janela de plantio
@@ -242,9 +242,9 @@ def _mid_date(start: date, end: date) -> date:
 
 def _step_indicator(current: int) -> None:
     steps = [
-        (1, "Contexto do campo"),
-        (2, "Decisões"),
-        (3, "Revisão"),
+        (1, "Field Context"),
+        (2, "Decisions"),
+        (3, "Review"),
     ]
     parts = []
     for i, (n, label) in enumerate(steps):
@@ -276,9 +276,9 @@ def _step_indicator(current: int) -> None:
 def render() -> None:
     step = st.session_state.get("input_step", 1)
 
-    st.markdown('<div class="page-title">Nova Simulação</div>', unsafe_allow_html=True)
+    st.markdown('<div class="page-title">New Simulation</div>', unsafe_allow_html=True)
     st.markdown(
-        '<div class="page-subtitle">Soja Verão · Mato Grosso</div>',
+        '<div class="page-subtitle">Soy · Mato Grosso</div>',
         unsafe_allow_html=True,
     )
     st.markdown("<br>", unsafe_allow_html=True)
@@ -299,10 +299,10 @@ def render() -> None:
 def _render_context_step() -> None:
     st.markdown("""
     <div class="form-section">
-        <div class="form-section-title">Contexto do Campo</div>
+        <div class="form-section-title">Field Context</div>
         <div class="form-section-desc">
-            Informe as características do seu talhão e da safra.
-            Esses fatores determinam o potencial de produtividade da área.
+            Enter the characteristics of your field and crop season.
+            These factors determine the yield potential of the area.
         </div>
     </div>
     """, unsafe_allow_html=True)
@@ -310,65 +310,65 @@ def _render_context_step() -> None:
     col_a, col_b = st.columns(2)
 
     with col_a:
-        st.markdown("**Qual é a região da sua lavoura?**")
-        st.markdown('<div class="input-help">Regiões com melhor clima e infraestrutura tendem a produzir mais.</div>', unsafe_allow_html=True)
+        st.markdown("**What is the region of your farm?**")
+        st.markdown('<div class="input-help">Regions with better climate and infrastructure tend to produce more.</div>', unsafe_allow_html=True)
         c1_disp = st.selectbox(
-            "Região MT", list(_C1_OPTIONS.keys()),
+            "MT Region", list(_C1_OPTIONS.keys()),
             index=list(_C1_OPTIONS).index(st.session_state.get("c1_display", list(_C1_OPTIONS.keys())[0])),
             label_visibility="collapsed", key="sel_c1",
         )
         st.session_state.c1_display = c1_disp
 
-        st.markdown("**Qual é o pH do solo?**")
-        st.markdown('<div class="input-help">pH entre 5,5 e 6,5 é ideal para soja. Fora dessa faixa, a planta perde eficiência na absorção de nutrientes.</div>', unsafe_allow_html=True)
+        st.markdown("**What is the soil pH?**")
+        st.markdown('<div class="input-help">A pH between 5.5 and 6.5 is ideal for soy. Outside this range, the plant loses efficiency in nutrient uptake.</div>', unsafe_allow_html=True)
         c3_disp = st.selectbox(
-            "pH do Solo", list(_C3_OPTIONS.keys()),
+            "Soil pH", list(_C3_OPTIONS.keys()),
             index=list(_C3_OPTIONS).index(st.session_state.get("c3_display", list(_C3_OPTIONS.keys())[0])),
             label_visibility="collapsed", key="sel_c3",
         )
         st.session_state.c3_display = c3_disp
 
-        st.markdown("**Qual é o tipo de solo do talhão?**")
-        st.markdown('<div class="input-help">Latossolos têm melhor estrutura física e drenagem, favorecendo o desenvolvimento das raízes.</div>', unsafe_allow_html=True)
+        st.markdown("**What is the soil type of the field?**")
+        st.markdown('<div class="input-help">Latosols have better physical structure and drainage, promoting root development.</div>', unsafe_allow_html=True)
         c5_disp = st.selectbox(
-            "Tipo de Solo", list(_C5_OPTIONS.keys()),
+            "Soil Type", list(_C5_OPTIONS.keys()),
             index=list(_C5_OPTIONS).index(st.session_state.get("c5_display", list(_C5_OPTIONS.keys())[0])),
             label_visibility="collapsed", key="sel_c5",
         )
         st.session_state.c5_display = c5_disp
 
-        st.markdown("**Qual é a previsão climática para esta safra?**")
-        st.markdown('<div class="input-help">O regime de chuvas no período de enchimento de grão é o principal fator climático de risco para a produtividade.</div>', unsafe_allow_html=True)
+        st.markdown("**What is the climate forecast for this season?**")
+        st.markdown('<div class="input-help">The rainfall pattern during grain filling is the main climate risk factor for yield.</div>', unsafe_allow_html=True)
         c7_disp = st.selectbox(
-            "Previsão Climática", list(_C7_OPTIONS.keys()),
+            "Climate Forecast", list(_C7_OPTIONS.keys()),
             index=list(_C7_OPTIONS).index(st.session_state.get("c7_display", list(_C7_OPTIONS.keys())[1])),
             label_visibility="collapsed", key="sel_c7",
         )
         st.session_state.c7_display = c7_disp
 
     with col_b:
-        st.markdown("**Qual é a textura do solo?**")
-        st.markdown('<div class="input-help">Solos argilosos retêm mais água e nutrientes. Solos arenosos têm menor capacidade de armazenar água.</div>', unsafe_allow_html=True)
+        st.markdown("**What is the soil texture?**")
+        st.markdown('<div class="input-help">Clay soils retain more water and nutrients. Sandy soils have lower water storage capacity.</div>', unsafe_allow_html=True)
         c2_disp = st.selectbox(
-            "Textura do Solo", list(_C2_OPTIONS.keys()),
+            "Soil Texture", list(_C2_OPTIONS.keys()),
             index=list(_C2_OPTIONS).index(st.session_state.get("c2_display", list(_C2_OPTIONS.keys())[0])),
             label_visibility="collapsed", key="sel_c2",
         )
         st.session_state.c2_display = c2_disp
 
-        st.markdown("**Como é a drenagem do talhão?**")
-        st.markdown('<div class="input-help">Alagamentos prolongados prejudicam as raízes e podem reduzir drasticamente a produtividade.</div>', unsafe_allow_html=True)
+        st.markdown("**What is the drainage of the field?**")
+        st.markdown('<div class="input-help">Prolonged waterlogging damages roots and can drastically reduce yield.</div>', unsafe_allow_html=True)
         c4_disp = st.selectbox(
-            "Drenagem", list(_C4_OPTIONS.keys()),
+            "Drainage", list(_C4_OPTIONS.keys()),
             index=list(_C4_OPTIONS).index(st.session_state.get("c4_display", list(_C4_OPTIONS.keys())[0])),
             label_visibility="collapsed", key="sel_c4",
         )
         st.session_state.c4_display = c4_disp
 
-        st.markdown("**Qual é o tamanho da área plantada?**")
-        st.markdown('<div class="input-help">Áreas maiores têm ganho de escala operacional e eficiência de mecanização.</div>', unsafe_allow_html=True)
+        st.markdown("**What is the size of the planted area?**")
+        st.markdown('<div class="input-help">Larger areas benefit from operational scale and mechanization efficiency.</div>', unsafe_allow_html=True)
         c6_disp = st.selectbox(
-            "Área", list(_C6_OPTIONS.keys()),
+            "Area", list(_C6_OPTIONS.keys()),
             index=list(_C6_OPTIONS).index(st.session_state.get("c6_display", list(_C6_OPTIONS.keys())[1])),
             label_visibility="collapsed", key="sel_c6",
         )
@@ -377,7 +377,7 @@ def _render_context_step() -> None:
     st.markdown("<br>", unsafe_allow_html=True)
     _, col_next = st.columns([4, 1])
     with col_next:
-        if st.button("Próximo: Decisões →", type="primary", use_container_width=True):
+        if st.button("Next: Decisions →", type="primary", use_container_width=True):
             st.session_state.ctx_c1 = c1_disp
             st.session_state.ctx_c2 = c2_disp
             st.session_state.ctx_c3 = c3_disp
@@ -394,10 +394,10 @@ def _render_context_step() -> None:
 def _render_decisions_step() -> None:
     st.markdown("""
     <div class="form-section">
-        <div class="form-section-title">Decisões do Produtor</div>
+        <div class="form-section-title">Management Decisions</div>
         <div class="form-section-desc">
-            Configure como pretende conduzir a safra.
-            O simulador calculará a produtividade esperada para cada cenário climático possível.
+            Configure how you plan to manage the season.
+            The simulator will calculate the expected yield for each possible climate scenario.
         </div>
     </div>
     """, unsafe_allow_html=True)
@@ -431,10 +431,10 @@ div:has(>div>div>input[placeholder="SIMCAL_E"]) {
     col_a, col_b = st.columns(2)
 
     with col_a:
-        # D1 Janela de Plantio — calendário HTML customizado
-        st.markdown("**Quando você planeja realizar o plantio?**")
+        # D1 Planting Window — custom HTML calendar
+        st.markdown("**When do you plan to plant?**")
         st.markdown(
-            '<div class="input-help">Janela ideal: 16/out a 10/nov. Clique para início, clique novamente para o fim (máx. 7 dias).</div>',
+            '<div class="input-help">Optimal window: Oct 16 to Nov 10. Click for start, click again for end (max. 7 days).</div>',
             unsafe_allow_html=True,
         )
 
@@ -460,13 +460,13 @@ div:has(>div>div>input[placeholder="SIMCAL_E"]) {
         st.session_state.d1_date_end   = d1_end
 
         # D3 TSI — multi-select
-        st.markdown("<br>**Quais componentes do tratamento de sementes você usará?**", unsafe_allow_html=True)
+        st.markdown("<br>**Which seed treatment components will you use?**", unsafe_allow_html=True)
         st.markdown(
-            '<div class="input-help">O tratamento premium (fungicida + inseticida + nematicida + inoculante) protege a semente e melhora o estande inicial.</div>',
+            '<div class="input-help">The premium treatment (fungicide + insecticide + nematicide + inoculant) protects the seed and improves initial stand.</div>',
             unsafe_allow_html=True,
         )
         d3_comps = st.multiselect(
-            "Componentes do TSI",
+            "Seed Treatment Components",
             ["Fungicida", "Inoculante", "Inseticida", "Nematicida"],
             default=st.session_state.get("d3_comps", ["Fungicida", "Inoculante"]),
             label_visibility="collapsed",
@@ -480,14 +480,14 @@ div:has(>div>div>input[placeholder="SIMCAL_E"]) {
             unsafe_allow_html=True,
         )
 
-        # D5 Manejo de Doenças
-        st.markdown("<br>**Quantas aplicações de fungicida você planeja?**", unsafe_allow_html=True)
+        # D5 Disease Management
+        st.markdown("<br>**How many fungicide applications are you planning?**", unsafe_allow_html=True)
         st.markdown(
-            '<div class="input-help">3 ou mais aplicações com monitoramento ativo de ferrugem asiática representa o manejo mais intensivo.</div>',
+            '<div class="input-help">3 or more applications with active Asian rust monitoring represents the most intensive management.</div>',
             unsafe_allow_html=True,
         )
         d5_apps = st.select_slider(
-            "Aplicações de fungicida",
+            "Fungicide applications",
             options=[0, 1, 2, 3, 4],
             value=st.session_state.get("d5_apps", 2),
             label_visibility="collapsed",
@@ -495,7 +495,7 @@ div:has(>div>div>input[placeholder="SIMCAL_E"]) {
         )
         st.session_state.d5_apps = d5_apps
         d5_monitor = st.checkbox(
-            "Monitoramento ativo de ferrugem asiática",
+            "Active Asian rust monitoring",
             value=st.session_state.get("d5_monitor", False),
             key="d5_mon_cb",
         )
@@ -509,9 +509,9 @@ div:has(>div>div>input[placeholder="SIMCAL_E"]) {
 
     with col_b:
         # D2 Cultivar
-        st.markdown("**Qual cultivar você vai usar?**")
+        st.markdown("**Which cultivar will you use?**")
         st.markdown(
-            '<div class="input-help">Cultivares lançados após 2020 possuem genética mais responsiva a insumos e melhor resistência a doenças.</div>',
+            '<div class="input-help">Cultivars released after 2020 have genetics more responsive to inputs and better disease resistance.</div>',
             unsafe_allow_html=True,
         )
         d2_disp = st.selectbox(
@@ -521,14 +521,14 @@ div:has(>div>div>input[placeholder="SIMCAL_E"]) {
         )
         st.session_state.d2_display = d2_disp
 
-        # D4 Densidade
-        st.markdown("<br>**Qual será a densidade de semeadura?**", unsafe_allow_html=True)
+        # D4 Seeding Density
+        st.markdown("<br>**What will the seeding density be?**", unsafe_allow_html=True)
         st.markdown(
-            '<div class="input-help">Faixa recomendada: 280 a 340 mil sementes germinávéis por hectare.</div>',
+            '<div class="input-help">Recommended range: 280 to 340 thousand viable seeds per hectare.</div>',
             unsafe_allow_html=True,
         )
         d4_seeds = st.number_input(
-            "Sementes/ha",
+            "Seeds/ha",
             min_value=150_000, max_value=500_000,
             value=st.session_state.get("d4_seeds", 300_000),
             step=5_000,
@@ -540,18 +540,18 @@ div:has(>div>div>input[placeholder="SIMCAL_E"]) {
         d4_color     = "#2e7d32" if "Média" in d4_densidade else "#f57c00"
         st.markdown(
             f'<div style="font-size:0.78rem;font-weight:600;color:{d4_color};margin-top:4px">'
-            f'{d4_seeds:,} sem/ha → {d4_densidade.split(" (")[0].strip()}</div>',
+            f'{d4_seeds:,} seeds/ha → {d4_densidade.split(" (")[0].strip()}</div>',
             unsafe_allow_html=True,
         )
 
-        # D6 Tecnologia de plantio
-        st.markdown("<br>**Qual é a capacidade da sua plantadeira?**", unsafe_allow_html=True)
+        # D6 Planting Technology
+        st.markdown("<br>**What is the capability of your planter?**", unsafe_allow_html=True)
         st.markdown(
-            '<div class="input-help">Precisão no depósito e espaçamento uniforme das sementes impactam o estande e a competição entre plantas.</div>',
+            '<div class="input-help">Precision in seed placement and uniform spacing impact stand and inter-plant competition.</div>',
             unsafe_allow_html=True,
         )
         d6_disp = st.selectbox(
-            "Tecnologia de Plantio", list(_D6_OPTIONS.keys()),
+            "Planting Technology", list(_D6_OPTIONS.keys()),
             index=list(_D6_OPTIONS).index(st.session_state.get("d6_display", list(_D6_OPTIONS.keys())[1])),
             label_visibility="collapsed", key="sel_d6",
         )
@@ -560,11 +560,11 @@ div:has(>div>div>input[placeholder="SIMCAL_E"]) {
     st.markdown("<br>", unsafe_allow_html=True)
     col_back, _, col_next = st.columns([1, 3, 1])
     with col_back:
-        if st.button("← Contexto", use_container_width=True):
+        if st.button("← Context", use_container_width=True):
             st.session_state.input_step = 1
             st.rerun()
     with col_next:
-        if st.button("Revisar →", type="primary", use_container_width=True):
+        if st.button("Review →", type="primary", use_container_width=True):
             st.session_state.dec_d1_start    = d1_start
             st.session_state.dec_d1_end      = d1_end
             st.session_state.dec_d1_mid      = d1_mid
@@ -614,10 +614,10 @@ def _render_review_step() -> None:
 
     st.markdown("""
     <div class="form-section">
-        <div class="form-section-title">Revise sua simulação</div>
+        <div class="form-section-title">Review & Confirm</div>
         <div class="form-section-desc">
-            Confira todos os dados antes de simular.
-            Se precisar corrigir algum item, volte para a etapa correspondente.
+            Check all data before running the simulation.
+            If you need to correct any item, go back to the corresponding step.
         </div>
     </div>
     """, unsafe_allow_html=True)
@@ -625,15 +625,15 @@ def _render_review_step() -> None:
     col_ctx, col_dec = st.columns(2)
 
     with col_ctx:
-        st.markdown('<div class="review-section-label">Contexto do Campo</div>', unsafe_allow_html=True)
+        st.markdown('<div class="review-section-label">Field Context</div>', unsafe_allow_html=True)
         rows_ctx = [
-            ("Região",              c1),
-            ("Textura do Solo",     c2),
-            ("pH do Solo",          c3),
-            ("Drenagem",            c4),
-            ("Tipo de Solo",        c5),
-            ("Área Plantada",       c6),
-            ("Previsão Climática",  c7),
+            ("Region",              c1),
+            ("Soil Texture",        c2),
+            ("Soil pH",             c3),
+            ("Drainage",            c4),
+            ("Soil Type",           c5),
+            ("Planted Area",        c6),
+            ("Climate Forecast",    c7),
         ]
         html = '<div class="review-card">'
         for k, v in rows_ctx:
@@ -642,17 +642,17 @@ def _render_review_step() -> None:
         st.markdown(html, unsafe_allow_html=True)
 
     with col_dec:
-        st.markdown('<div class="review-section-label">Decisões do Produtor</div>', unsafe_allow_html=True)
-        d5_summary = f"{d5_apps} aplicaç{'ão' if d5_apps==1 else 'ões'}"
+        st.markdown('<div class="review-section-label">Management Decisions</div>', unsafe_allow_html=True)
+        d5_summary = f"{d5_apps} application{'s' if d5_apps != 1 else ''}"
         if d5_monitor:
-            d5_summary += " + monitoramento"
+            d5_summary += " + monitoring"
         rows_dec = [
-            ("Período de Plantio",   f"{period_str} → {d1_janela.split('(')[0].strip()}"),
+            ("Planting Period",      f"{period_str} → {d1_janela.split('(')[0].strip()}"),
             ("Cultivar",             d2_disp),
-            ("Tratamento de Sementes", f"{', '.join(d3_comps) if d3_comps else 'Nenhum'} → {d3_tsi.split(' (')[0]}"),
-            ("Densidade",            f"{d4_seeds:,} sem/ha → {d4_densidade.split(' (')[0].strip()}"),
-            ("Manejo de Doenças",    f"{d5_summary} → {d5_manejo.split(' (')[0].strip()}"),
-            ("Plantadeira",          d6_disp),
+            ("Seed Treatment",       f"{', '.join(d3_comps) if d3_comps else 'None'} → {d3_tsi.split(' (')[0]}"),
+            ("Density",              f"{d4_seeds:,} seeds/ha → {d4_densidade.split(' (')[0].strip()}"),
+            ("Disease Management",   f"{d5_summary} → {d5_manejo.split(' (')[0].strip()}"),
+            ("Planter",              d6_disp),
         ]
         html = '<div class="review-card">'
         for k, v in rows_dec:
@@ -664,15 +664,15 @@ def _render_review_step() -> None:
     col_back_ctx, col_back_dec, _, col_run = st.columns([1, 1, 2, 2])
 
     with col_back_ctx:
-        if st.button("← Contexto", use_container_width=True):
+        if st.button("← Context", use_container_width=True):
             st.session_state.input_step = 1
             st.rerun()
     with col_back_dec:
-        if st.button("← Decisões", use_container_width=True):
+        if st.button("← Decisions", use_container_width=True):
             st.session_state.input_step = 2
             st.rerun()
     with col_run:
-        if st.button("Confirmar e Simular →", type="primary", use_container_width=True):
+        if st.button("Confirm & Simulate →", type="primary", use_container_width=True):
             _run_simulation(
                 c1, c2, c3, c4, c5, c6, c7,
                 d1_janela, d2_disp, d3_tsi,
@@ -718,27 +718,27 @@ def _build_display_dict(
     d4_seeds: int, d5_manejo: str, d5_apps: int, d5_monitor: bool,
     d6_disp: str,
 ) -> dict:
-    d5_summary = f"{d5_apps} aplicaç{'ão' if d5_apps == 1 else 'ões'}"
+    d5_summary = f"{d5_apps} application{'s' if d5_apps != 1 else ''}"
     if d5_monitor:
-        d5_summary += " + monitoramento"
+        d5_summary += " + monitoring"
     period_str = (
-        f"{d1_start.strftime('%d/%m')} a {d1_end.strftime('%d/%m')}"
+        f"{d1_start.strftime('%d/%m')} to {d1_end.strftime('%d/%m')}"
         if d1_start != d1_end else d1_start.strftime("%d/%m")
     )
     return {
-        "Região":              c1_disp,
-        "Textura":             c2_disp,
+        "Region":              c1_disp,
+        "Texture":             c2_disp,
         "pH":                  c3_disp,
-        "Drenagem":            c4_disp,
-        "Tipo de Solo":        c5_disp,
-        "Área":                c6_disp,
-        "Previsão Climática":  c7_disp,
-        "Período de Plantio":  f"{period_str} → {d1_janela.split('(')[0].strip()}",
+        "Drainage":            c4_disp,
+        "Soil Type":           c5_disp,
+        "Area":                c6_disp,
+        "Climate Forecast":    c7_disp,
+        "Planting Period":     f"{period_str} → {d1_janela.split('(')[0].strip()}",
         "Cultivar":            d2_disp,
-        "Tratamento Sementes": f"{', '.join(d3_comps) or 'Nenhum'} → {d3_tsi.split(' (')[0]}",
-        "Densidade":           f"{d4_seeds:,} sem/ha",
-        "Manejo de Doenças":   d5_summary,
-        "Plantadeira":         d6_disp,
+        "Seed Treatment":      f"{', '.join(d3_comps) or 'None'} → {d3_tsi.split(' (')[0]}",
+        "Density":             f"{d4_seeds:,} seeds/ha",
+        "Disease Management":  d5_summary,
+        "Planter":             d6_disp,
     }
 
 
@@ -769,7 +769,7 @@ def _run_simulation(
     context   = _build_api_context(c1_disp, c2_disp, c3_disp, c4_disp, c5_disp, c6_disp, c7_disp)
     decisions = _build_api_decisions(d1_janela, d2_disp, d3_tsi, d4_densidade, d5_manejo, d6_disp)
 
-    with st.spinner("Calculando sua simulação…"):
+    with st.spinner("Running your simulation…"):
         result = simulate(context, decisions)
 
     if result:

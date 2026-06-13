@@ -19,7 +19,7 @@ from frontend.auth      import is_authenticated, render_auth, logout
 from frontend.navigation import go
 
 st.set_page_config(
-    page_title="Simulador de Safra · Soja MT",
+    page_title="Harvest Simulator · Soy MT",
     page_icon="🌾",
     layout="wide",
     initial_sidebar_state="expanded",
@@ -51,11 +51,11 @@ for k, v in {
 def _render_home():
     auth = st.session_state.auth
     st.markdown(
-        f'<div class="page-title">Olá, {auth["name"].split()[0]}!</div>',
+        f'<div class="page-title">Hello, {auth["name"].split()[0]}!</div>',
         unsafe_allow_html=True,
     )
     st.markdown(
-        '<div class="page-subtitle">Simulador de Safra · Soja Verão · Mato Grosso</div>',
+        '<div class="page-subtitle">Harvest Simulator · Soy · Mato Grosso</div>',
         unsafe_allow_html=True,
     )
     st.markdown("<br>", unsafe_allow_html=True)
@@ -135,34 +135,34 @@ def _render_home():
         <ellipse cx="500" cy="180" rx="5" ry="8"  fill="white" transform="rotate(15 500 180)"/>
       </svg>
 
-      <div class="landing-tag">Soja Verão &middot; Mato Grosso</div>
-      <div class="landing-title">Simule sua safra<br>antes de decidir</div>
+      <div class="landing-tag">Soy &middot; Mato Grosso</div>
+      <div class="landing-title">Simulate your harvest<br>before deciding</div>
       <div class="landing-desc">
-          Informe as condições do seu talhão e as suas decisões de manejo.
-          O simulador projeta a produtividade esperada em cada cenário climático
-          e aponta qual combinação entrega o melhor resultado esperado.
+          Enter your field conditions and management decisions.
+          The simulator projects expected productivity for each climate scenario
+          and identifies which combination delivers the best expected outcome.
       </div>
     </div>
     """, unsafe_allow_html=True)
 
-    if st.button("Iniciar nova simulação →", type="primary"):
+    if st.button("Start new simulation →", type="primary"):
         st.session_state.input_step = 1
         go("input")
 
     st.markdown("<br>", unsafe_allow_html=True)
 
-    # ── Como funciona ──────────────────────────────────────────────────────
-    st.markdown('<div class="section-hdr">Como funciona</div>', unsafe_allow_html=True)
+    # ── How it works ───────────────────────────────────────────────────────
+    st.markdown('<div class="section-hdr">How it works</div>', unsafe_allow_html=True)
     c1, c2, c3, c4 = st.columns(4)
     for col, num, title, desc in [
-        (c1, "1", "Contexto do campo",
-         "Informe região, tipo de solo, pH, drenagem, aptidão estrutural, área e previsão climática."),
-        (c2, "2", "Decisões do produtor",
-         "Defina janela de plantio, cultivar, TSI, densidade, manejo de doenças e tecnologia."),
-        (c3, "3", "Revisão e confirmação",
-         "Veja um resumo completo antes de simular para garantir que tudo está correto."),
-        (c4, "4", "Resultados e recomendações",
-         "Receba recomendações ranqueadas com produtividade esperada, análise de risco e relatório para download."),
+        (c1, "1", "Field context",
+         "Enter region, soil type, pH, drainage, structural fitness, area and climate forecast."),
+        (c2, "2", "Producer decisions",
+         "Set planting window, cultivar, seed treatment, density, disease management and technology."),
+        (c3, "3", "Review and confirmation",
+         "See a full summary before simulating to make sure everything is correct."),
+        (c4, "4", "Results and recommendations",
+         "Receive ranked recommendations with expected productivity, risk analysis and a downloadable report."),
     ]:
         with col:
             st.markdown(f"""
@@ -175,35 +175,35 @@ def _render_home():
 
     st.markdown("<br>", unsafe_allow_html=True)
 
-    # ── Sumário do modelo ──────────────────────────────────────────────────
-    st.markdown('<div class="section-hdr">Como o simulador funciona</div>', unsafe_allow_html=True)
+    # ── Model summary ──────────────────────────────────────────────────────
+    st.markdown('<div class="section-hdr">How the simulator works</div>', unsafe_allow_html=True)
     m1, m2, m3 = st.columns(3)
     with m1:
         st.markdown("""<div class="metric-card">
-            <div class="mc-label">Referência regional</div>
+            <div class="mc-label">Regional reference</div>
             <div class="mc-value">60 sc/ha</div>
-            <div class="mc-sub">Produtividade média MT · CONAB 2023/24</div>
+            <div class="mc-sub">Average productivity MT · CONAB 2023/24</div>
         </div>""", unsafe_allow_html=True)
     with m2:
         st.markdown("""<div class="metric-card">
-            <div class="mc-label">Fatores avaliados</div>
+            <div class="mc-label">Factors evaluated</div>
             <div class="mc-value" style="font-size:1.4rem;line-height:1.4">
                 7 + 6
             </div>
-            <div class="mc-sub">7 fatores de campo + 6 decisões do produtor</div>
+            <div class="mc-sub">7 field factors + 6 producer decisions</div>
         </div>""", unsafe_allow_html=True)
     with m3:
         st.markdown("""<div class="metric-card">
-            <div class="mc-label">Análise de risco</div>
-            <div class="mc-value">10.000 sim.</div>
-            <div class="mc-sub">Intervalo de confiança 90% por cenário</div>
+            <div class="mc-label">Risk analysis</div>
+            <div class="mc-value">10,000 sim.</div>
+            <div class="mc-sub">90% confidence interval per scenario</div>
         </div>""", unsafe_allow_html=True)
 
     # ── Histórico rápido ───────────────────────────────────────────────────
     history = st.session_state.sim_history
     if history:
         st.markdown("<br>", unsafe_allow_html=True)
-        st.markdown('<div class="section-hdr">Últimas simulações</div>', unsafe_allow_html=True)
+        st.markdown('<div class="section-hdr">Recent simulations</div>', unsafe_allow_html=True)
         for sim in reversed(history[-3:]):
             ev_val = sim["result"]["criteria"]["bayes_ev"]["value"]
             st.markdown(f"""
@@ -215,13 +215,13 @@ def _render_home():
                 </div>
                 <div class="hist-ev">
                     <div class="hist-ev-val">{ev_val:.1f}</div>
-                    <div class="hist-ev-unit">sc/ha esperados</div>
+                    <div class="hist-ev-unit">sc/ha expected</div>
                 </div>
             </div>
             """, unsafe_allow_html=True)
         col_h, _ = st.columns([1, 5])
         with col_h:
-            if st.button("Ver histórico completo →"):
+            if st.button("View full history →"):
                 go("history")
 
 
@@ -243,8 +243,8 @@ with st.sidebar:
             </svg>
         </div>
         <div>
-            <span class="sidebar-brand">Simulador de Safra</span>
-            <span class="sidebar-brand-sub">Soja Verão · Mato Grosso</span>
+            <span class="sidebar-brand">Harvest Simulator</span>
+            <span class="sidebar-brand-sub">Soy · Mato Grosso</span>
         </div>
     </div>
     """, unsafe_allow_html=True)
@@ -265,32 +265,32 @@ with st.sidebar:
                 st.session_state.input_step = 1
             go(page)
 
-    # Navegação principal
-    st.markdown('<div class="nav-section-label">Principal</div>', unsafe_allow_html=True)
-    _nav_btn("Início", "home", "home")
-    _nav_btn("Nova Simulação", "input", "input")
+    # Main navigation
+    st.markdown('<div class="nav-section-label">Main</div>', unsafe_allow_html=True)
+    _nav_btn("Home", "home", "home")
+    _nav_btn("New Simulation", "input", "input")
 
-    # Análise
+    # Analysis
     has_result = st.session_state.sim_result is not None
-    st.markdown('<div class="nav-section-label">Análise</div>', unsafe_allow_html=True)
-    _nav_btn("Resultados", "results", "results")
+    st.markdown('<div class="nav-section-label">Analysis</div>', unsafe_allow_html=True)
+    _nav_btn("Results", "results", "results")
     _nav_btn("Dashboard", "dashboard", "dashboard", enabled=has_result)
 
-    # Apresentação
-    st.markdown('<div class="nav-section-label">Apresentação</div>', unsafe_allow_html=True)
-    _nav_btn("Como Calculamos", "explainer", "explainer")
+    # About
+    st.markdown('<div class="nav-section-label">About</div>', unsafe_allow_html=True)
+    _nav_btn("How We Calculate", "explainer", "explainer")
 
-    # Histórico
-    st.markdown('<div class="nav-section-label">Histórico</div>', unsafe_allow_html=True)
+    # History
+    st.markdown('<div class="nav-section-label">History</div>', unsafe_allow_html=True)
     n_hist = len(st.session_state.sim_history)
-    label_hist = f"Histórico ({n_hist})" if n_hist else "Histórico"
+    label_hist = f"History ({n_hist})" if n_hist else "History"
     _nav_btn(label_hist, "history", "history")
 
-    # Escopo ativo
+    # Active scope
     st.markdown("""
     <div class="sidebar-scope">
-        <div class="scope-label">Cultura</div>
-        <div class="scope-value"><span class="scope-dot"></span>Soja Verão &middot; Mato Grosso</div>
+        <div class="scope-label">Crop</div>
+        <div class="scope-value"><span class="scope-dot"></span>Soy &middot; Mato Grosso</div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -302,7 +302,7 @@ with st.sidebar:
         <div class="sidebar-user-role">{auth['email']}</div>
     </div>
     """, unsafe_allow_html=True)
-    if st.button("Sair", key="btn_logout", use_container_width=True):
+    if st.button("Log out", key="btn_logout", use_container_width=True):
         logout()
 
 

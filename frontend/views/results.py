@@ -24,8 +24,8 @@ from frontend.views.results_pdf import _build_pdf
 def render() -> None:
     result = st.session_state.get("sim_result")
     if not result:
-        st.warning("Nenhuma simulação encontrada. Volte ao formulário.")
-        if st.button("← Ir para Simulação"):
+        st.warning("No simulation found. Go back to the form.")
+        if st.button("← Go to Simulation"):
             go("input")
         return
 
@@ -49,8 +49,8 @@ def render() -> None:
         None,
     )
 
-    st.markdown('<div class="page-title">Resultados da Simulação</div>', unsafe_allow_html=True)
-    st.markdown('<div class="page-subtitle">Soja Verão · Mato Grosso</div>', unsafe_allow_html=True)
+    st.markdown('<div class="page-title">Simulation Results</div>', unsafe_allow_html=True)
+    st.markdown('<div class="page-subtitle">Soy · Mato Grosso</div>', unsafe_allow_html=True)
     st.markdown("<br>", unsafe_allow_html=True)
 
     # Layout: conteúdo principal (75%) + resumo do cenário (25%)
@@ -65,17 +65,17 @@ def render() -> None:
         m1, m2, m3, m4 = st.columns(4)
         with m1:
             st.markdown(f"""<div class="metric-card">
-                <div class="mc-label">Referência da região</div>
+                <div class="mc-label">Regional reference</div>
                 <div class="mc-value">{baseline:.0f}</div>
-                <div class="mc-sub">sc/ha · produtividade média MT</div>
-                <div class="mc-caption">Ponto de partida antes de considerar o contexto do seu talhão</div>
+                <div class="mc-sub">sc/ha · average MT yield</div>
+                <div class="mc-caption">Starting point before considering your field context</div>
             </div>""", unsafe_allow_html=True)
         with m2:
             st.markdown(f"""<div class="metric-card">
-                <div class="mc-label">Ponto de partida da sua lavoura</div>
+                <div class="mc-label">Your field's starting point</div>
                 <div class="mc-value">{result['base_effective']:.0f}</div>
-                <div class="mc-sub">sc/ha · após solo, cultivar e TSI</div>
-                <div class="mc-caption">Referência ajustada pelo contexto do campo e suas escolhas fixas</div>
+                <div class="mc-sub">sc/ha · after soil, cultivar and seed treatment</div>
+                <div class="mc-caption">Reference adjusted for field context and your fixed choices</div>
             </div>""", unsafe_allow_html=True)
         with m3:
             user_ev_color = "#2e7d32" if user_sel['ev'] >= baseline else "#c62828"
@@ -85,11 +85,11 @@ def render() -> None:
                 None,
             )
             interval_str = (
-                f"Intervalo 90%: {user_mc['p5']:.0f}–{user_mc['p95']:.0f} sc/ha"
+                f"90% interval: {user_mc['p5']:.0f}–{user_mc['p95']:.0f} sc/ha"
                 if user_mc else ""
             )
             st.markdown(f"""<div class="metric-card">
-                <div class="mc-label">Produtividade esperada — sua escolha</div>
+                <div class="mc-label">Expected yield — your choice</div>
                 <div class="mc-value" style="color:{user_ev_color}">{user_sel['ev']:.1f}</div>
                 <div class="mc-sub">sc/ha · {_D1_SHORT.get(user_sel['d1'], user_sel['d1'])}</div>
                 <div class="mc-caption">{interval_str}</div>
@@ -99,11 +99,11 @@ def render() -> None:
             best_mc    = best_path.get("mc") or {}
             best_short = _D1_SHORT.get(best_path["d1"], best_path["d1"])
             best_interval = (
-                f"Intervalo 90%: {best_mc['p5']:.0f}–{best_mc['p95']:.0f} sc/ha"
+                f"90% interval: {best_mc['p5']:.0f}–{best_mc['p95']:.0f} sc/ha"
                 if best_mc else ""
             )
             st.markdown(f"""<div class="metric-card">
-                <div class="mc-label">Melhor cenário recomendado</div>
+                <div class="mc-label">Best recommended scenario</div>
                 <div class="mc-value" style="color:#2e7d32">{criteria['bayes_ev']['value']:.1f}</div>
                 <div class="mc-sub">sc/ha · {best_short}</div>
                 <div class="mc-caption">{best_interval}</div>
@@ -112,7 +112,7 @@ def render() -> None:
         st.markdown("<br>", unsafe_allow_html=True)
 
         # ── Recomendações ──────────────────────────────────────────────────────
-        st.markdown('<div class="section-hdr">Recomendações para a Sua Safra</div>', unsafe_allow_html=True)
+        st.markdown('<div class="section-hdr">Recommendations for Your Season</div>', unsafe_allow_html=True)
         _render_recommendations(
             paths, criteria, ev_vals, states, probs,
             decisions, display, matrix, user_sel, optimal_idx, user_row,
@@ -125,18 +125,18 @@ def render() -> None:
         st.markdown("<br>", unsafe_allow_html=True)
         _render_upgrade_potential(upgrade, decisions)
     st.markdown("<br>", unsafe_allow_html=True)
-    st.markdown('<div class="section-hdr">Exportar / Compartilhar</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-hdr">Export / Share</div>', unsafe_allow_html=True)
     _render_global_actions(result, display, auth, paths, ev_vals, states, probs, matrix, criteria, baseline)
 
     # ── Cálculos detalhados (colapsado) ───────────────────────────────────
     st.markdown("<br>", unsafe_allow_html=True)
-    with st.expander("📊 Quer entender como chegamos a essas recomendações?"):
+    with st.expander("📊 Want to understand how we got these recommendations?"):
         st.caption(
-            "Esta seção mostra os cálculos técnicos por trás das recomendações: "
-            "matriz de payoff, critérios de decisão e visualização hierárquica."
+            "This section shows the technical calculations behind the recommendations: "
+            "payoff matrix, decision criteria and hierarchical view."
         )
         tab_matrix, tab_criteria, tab_tree = st.tabs([
-            "Análise de Cenários", "Critérios de Decisão", "Visualização Hierárquica"
+            "Scenario Analysis", "Decision Criteria", "Hierarchical View"
         ])
         with tab_matrix:
             _render_matrix(paths, matrix, criteria, ev_vals, states, probs, optimal_idx, user_row)
@@ -149,13 +149,13 @@ def render() -> None:
     st.markdown("<br>", unsafe_allow_html=True)
     col_back, _, col_dash, col_new = st.columns([1, 3, 1, 1])
     with col_back:
-        if st.button("← Editar", use_container_width=True):
+        if st.button("← Edit", use_container_width=True):
             go("input")
     with col_dash:
         if st.button("Dashboard →", use_container_width=True):
             go("dashboard")
     with col_new:
-        if st.button("Nova simulação", type="primary", use_container_width=True):
+        if st.button("New simulation", type="primary", use_container_width=True):
             st.session_state.sim_result = None
             st.session_state.input_step = 1
             go("input")
@@ -164,9 +164,9 @@ def render() -> None:
 # ── Potencial de upgrade D2/D3/D6 ────────────────────────────────────────────
 
 _UPGRADE_LABELS = {
-    "d2_cultivar":   ("Cultivar",              "Trocar de cultivar pode mudar a produtividade esperada em:"),
-    "d3_tsi":        ("Tratamento de Sementes", "Trocar o TSI pode mudar a produtividade esperada em:"),
-    "d6_tecnologia": ("Plantadeira",            "Trocar a tecnologia de plantio pode mudar a produtividade esperada em:"),
+    "d2_cultivar":   ("Cultivar",        "Switching cultivar may change expected yield by:"),
+    "d3_tsi":        ("Seed Treatment",  "Switching seed treatment may change expected yield by:"),
+    "d6_tecnologia": ("Planter",         "Switching planting technology may change expected yield by:"),
 }
 
 _UPGRADE_SHORT = {
@@ -177,10 +177,10 @@ _UPGRADE_SHORT = {
 
 
 def _render_upgrade_potential(upgrade: dict, decisions: dict) -> None:
-    st.markdown('<div class="section-hdr">O que muda se você atualizar cultivar, TSI ou plantadeira?</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-hdr">What changes if you upgrade cultivar, seed treatment or planter?</div>', unsafe_allow_html=True)
     st.caption(
-        "Abaixo está o impacto esperado de trocar cada uma dessas escolhas, "
-        "mantendo as melhores opções de janela, densidade e manejo de doenças como referência."
+        "Below is the expected impact of switching each of these choices, "
+        "keeping the best window, density and disease management options as reference."
     )
 
     any_gain = False
@@ -197,27 +197,27 @@ def _render_upgrade_potential(upgrade: dict, decisions: dict) -> None:
         with col:
             st.markdown(f"**{label}**")
             cur_short = _UPGRADE_SHORT.get(current_val, current_val)
-            st.caption(f"Atual: {cur_short}")
+            st.caption(f"Current: {cur_short}")
 
             if not options:
-                st.info("Você já escolheu a melhor opção disponível.")
+                st.info("You already selected the best available option.")
                 continue
 
             if best_gain > 0:
                 any_gain = True
                 best_opt = _UPGRADE_SHORT.get(options[0]["option"], options[0]["option"])
                 st.success(
-                    f"**Trocar para {best_opt}** pode adicionar até "
-                    f"**+{best_gain:.1f} sc/ha** esperados."
+                    f"**Switching to {best_opt}** can add up to "
+                    f"**+{best_gain:.1f} expected sc/ha**."
                 )
             elif best_gain < 0:
-                st.info("As alternativas disponíveis têm desempenho menor que a sua escolha atual.")
+                st.info("Available alternatives perform worse than your current choice.")
             else:
-                st.info("Nenhuma alternativa apresenta ganho significativo.")
+                st.info("No alternative shows significant gain.")
 
-            # Tabela compacta com todas as alternativas
+            # Compact table with all alternatives
             if len(options) > 1:
-                with st.expander(f"Ver todas as opções de {label.lower()}"):
+                with st.expander(f"View all {label.lower()} options"):
                     for opt in options:
                         short = _UPGRADE_SHORT.get(opt["option"], opt["option"])
                         delta = opt["delta"]
@@ -231,21 +231,21 @@ def _render_upgrade_potential(upgrade: dict, decisions: dict) -> None:
 
     if any_gain:
         st.info(
-            "💡 Esses ganhos são estimativas baseadas no modelo e nas interações entre cultivar × manejo. "
-            "Consulte o distribuidor ou agrônomo de confiança para avaliar custo-benefício antes de decidir."
+            "💡 These gains are model-based estimates of cultivar × management interactions. "
+            "Consult your trusted dealer or agronomist to evaluate cost-benefit before deciding."
         )
 
 
 # ── Sidebar de resumo do cenário ──────────────────────────────────────────────
 
 def _render_scenario_sidebar(display: dict) -> None:
-    ctx_keys = ["Região", "Textura", "pH", "Drenagem", "Tipo de Solo", "Área", "Previsão Climática"]
-    dec_keys = ["Período de Plantio", "Cultivar", "Tratamento Sementes", "Densidade", "Manejo de Doenças", "Plantadeira"]
+    ctx_keys = ["Region", "Texture", "pH", "Drainage", "Soil Type", "Area", "Climate Forecast"]
+    dec_keys = ["Planting Period", "Cultivar", "Seed Treatment", "Density", "Disease Management", "Planter"]
 
     html = '<div class="scenario-sidebar">'
-    html += '<div class="scenario-sidebar-title">Resumo do Cenário</div>'
+    html += '<div class="scenario-sidebar-title">Scenario Summary</div>'
 
-    html += '<div style="font-size:0.6rem;font-weight:700;color:#6b6b8a;text-transform:uppercase;letter-spacing:0.1em;margin:8px 0 4px 0">Campo</div>'
+    html += '<div style="font-size:0.6rem;font-weight:700;color:#6b6b8a;text-transform:uppercase;letter-spacing:0.1em;margin:8px 0 4px 0">Field</div>'
     for k in ctx_keys:
         v = display.get(k, "—")
         if v:
@@ -256,7 +256,7 @@ def _render_scenario_sidebar(display: dict) -> None:
                 f'</div>'
             )
 
-    html += '<div style="font-size:0.6rem;font-weight:700;color:#6b6b8a;text-transform:uppercase;letter-spacing:0.1em;margin:12px 0 4px 0">Decisões</div>'
+    html += '<div style="font-size:0.6rem;font-weight:700;color:#6b6b8a;text-transform:uppercase;letter-spacing:0.1em;margin:12px 0 4px 0">Decisions</div>'
     for k in dec_keys:
         v = display.get(k, "—")
         if v:
@@ -367,7 +367,7 @@ def _render_comparison_charts(paths, ev_vals, matrix, states, probs, criteria, b
     st.markdown(
         '<div style="font-size:0.65rem;font-weight:700;color:#4a8a6a;'
         'text-transform:uppercase;letter-spacing:0.1em;margin:14px 0 4px 0">'
-        'Produtividade esperada · top 3</div>',
+        'Expected yield · top 3</div>',
         unsafe_allow_html=True,
     )
     st.plotly_chart(fig1, use_container_width=True, config={"displayModeBar": False})
@@ -426,7 +426,7 @@ def _render_comparison_charts(paths, ev_vals, matrix, states, probs, criteria, b
     st.markdown(
         '<div style="font-size:0.65rem;font-weight:700;color:#4a8a6a;'
         'text-transform:uppercase;letter-spacing:0.1em;margin:8px 0 4px 0">'
-        'Recomendação #1 · por clima</div>',
+        'Recommendation #1 · by climate</div>',
         unsafe_allow_html=True,
     )
     st.plotly_chart(fig2, use_container_width=True, config={"displayModeBar": False})
@@ -435,7 +435,7 @@ def _render_comparison_charts(paths, ev_vals, matrix, states, probs, criteria, b
     st.markdown(
         '<div style="font-size:0.65rem;font-weight:700;color:#4a8a6a;'
         'text-transform:uppercase;letter-spacing:0.1em;margin:14px 0 4px 0">'
-        'Perfil por cenário climático · top 3</div>',
+        'Climate scenario profile · top 3</div>',
         unsafe_allow_html=True,
     )
 
@@ -461,7 +461,7 @@ def _render_comparison_charts(paths, ev_vals, matrix, states, probs, criteria, b
         mode="lines",
         line=dict(color="#f4a024", width=1.5, dash="dot"),
         name="Ref",
-        hovertemplate="Referência: %{r:.0f} sc/ha<extra></extra>",
+        hovertemplate="Reference: %{r:.0f} sc/ha<extra></extra>",
     ))
     fig3.update_layout(
         height=230,
@@ -491,7 +491,7 @@ def _render_comparison_charts(paths, ev_vals, matrix, states, probs, criteria, b
     st.markdown(
         '<div style="font-size:0.65rem;font-weight:700;color:#4a8a6a;'
         'text-transform:uppercase;letter-spacing:0.1em;margin:14px 0 6px 0">'
-        'Risco de ficar abaixo da referência</div>',
+        'Risk of falling below reference</div>',
         unsafe_allow_html=True,
     )
     risk_html = ""
@@ -520,7 +520,7 @@ def _render_comparison_charts(paths, ev_vals, matrix, states, probs, criteria, b
             f'<span style="font-size:0.72rem;font-weight:700;color:#1a3a2a">#{i+1} — {ev:.1f} sc/ha</span>'
             f'<span style="font-size:0.7rem;font-weight:600;color:{diff_color}">{diff_sign}{diff:.1f}</span>'
             f'</div>'
-            f'<div style="font-size:0.68rem;color:#6b6b8a;margin-top:2px">Risco abaixo ref.: <b style="color:#1a3a2a">{risk_txt}</b></div>'
+            f'<div style="font-size:0.68rem;color:#6b6b8a;margin-top:2px">Risk below ref.: <b style="color:#1a3a2a">{risk_txt}</b></div>'
             f'{risk_bar}'
             f'</div>'
         )
@@ -573,7 +573,7 @@ def _render_comparison_charts(paths, ev_vals, matrix, states, probs, criteria, b
 
     </div>
     <div style="text-align:center;font-size:0.6rem;color:#b0c8b8;margin-top:6px;letter-spacing:0.08em">
-      SOJA VERÃO · MATO GROSSO
+      SOY · MATO GROSSO
     </div>
     """, unsafe_allow_html=True)
 
@@ -591,7 +591,7 @@ def _render_recommendations(paths, criteria, ev_vals, states, probs, decisions,
 
     for rank_num, (path_idx, path) in enumerate(top3, start=1):
         rank_cls   = f"rank-{rank_num}" if rank_num <= 3 else ""
-        rank_label = {1: "🥇 Recomendação principal", 2: "🥈 Alternativa", 3: "🥉 Alternativa"}.get(rank_num, f"#{rank_num}")
+        rank_label = {1: "🥇 Top recommendation", 2: "🥈 Alternative", 3: "🥉 Alternative"}.get(rank_num, f"#{rank_num}")
 
         ev         = ev_vals[path_idx]
         mc         = path.get("mc")
@@ -607,8 +607,8 @@ def _render_recommendations(paths, criteria, ev_vals, states, probs, decisions,
         if mc:
             risk_color = "#c62828" if mc["p_below"] > 0.25 else "#f57c00" if mc["p_below"] > 0.10 else "#2e7d32"
             mc_html = (
-                f'<div class="rec-yield-interval">Intervalo 90%: {mc["p5"]:.0f}–{mc["p95"]:.0f} sc/ha</div>'
-                f'<div class="rec-risk-label" style="color:{risk_color}">{mc["p_below"]:.0%} de chance abaixo da referência</div>'
+                f'<div class="rec-yield-interval">90% interval: {mc["p5"]:.0f}–{mc["p95"]:.0f} sc/ha</div>'
+                f'<div class="rec-risk-label" style="color:{risk_color}">{mc["p_below"]:.0%} chance of falling below reference</div>'
             )
         else:
             mc_html = ""
@@ -644,25 +644,25 @@ def _render_recommendations(paths, criteria, ev_vals, states, probs, decisions,
         # (Linhas em branco no f-string encerram o bloco HTML do CommonMark)
         decisions_grid = (
             f'<div class="rec-decisions-grid">'
-            f'<div class="dec-item"><div class="dec-label">Janela de Plantio</div><div class="dec-value">{d1_short}</div></div>'
-            f'<div class="dec-item"><div class="dec-label">Densidade</div><div class="dec-value">{d4_short}</div></div>'
-            f'<div class="dec-item"><div class="dec-label">Manejo de Doenças</div><div class="dec-value">{d5_short}</div></div>'
+            f'<div class="dec-item"><div class="dec-label">Planting Window</div><div class="dec-value">{d1_short}</div></div>'
+            f'<div class="dec-item"><div class="dec-label">Density</div><div class="dec-value">{d4_short}</div></div>'
+            f'<div class="dec-item"><div class="dec-label">Disease Management</div><div class="dec-value">{d5_short}</div></div>'
             f'<div class="dec-item"><div class="dec-label">Cultivar</div><div class="dec-value">{d2_short}</div></div>'
-            f'<div class="dec-item"><div class="dec-label">Trat. Sementes</div><div class="dec-value">{d3_short}</div></div>'
-            f'<div class="dec-item"><div class="dec-label">Plantadeira</div><div class="dec-value">{d6_short}</div></div>'
+            f'<div class="dec-item"><div class="dec-label">Seed Treatment</div><div class="dec-value">{d3_short}</div></div>'
+            f'<div class="dec-item"><div class="dec-label">Planter</div><div class="dec-value">{d6_short}</div></div>'
             f'</div>'
         )
         yield_col = (
             f'<div style="min-width:150px">'
             f'<div class="rec-yield-big">{ev:.1f}</div>'
-            f'<div class="rec-yield-unit">sc/ha esperado</div>'
-            f'<div class="rec-yield-range" style="color:{delta_color};font-weight:600">{delta_sign}{delta:.1f} sc/ha vs. referência</div>'
+            f'<div class="rec-yield-unit">expected sc/ha</div>'
+            f'<div class="rec-yield-range" style="color:{delta_color};font-weight:600">{delta_sign}{delta:.1f} sc/ha vs. reference</div>'
             f'{mc_html}'
             f'</div>'
         )
         scenario_col = (
             f'<div style="flex:1;min-width:200px;border-left:1px solid #e4e4f0;padding-left:20px">'
-            f'<div style="font-size:0.68rem;font-weight:700;color:#6b6b8a;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px">Por cenário climático</div>'
+            f'<div style="font-size:0.68rem;font-weight:700;color:#6b6b8a;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px">By climate scenario</div>'
             f'{scenarios_html}'
             f'</div>'
         )
@@ -678,28 +678,28 @@ def _render_recommendations(paths, criteria, ev_vals, states, probs, decisions,
         st.markdown(card_html, unsafe_allow_html=True)
 
         # ── Expander e botões — fora do HTML mas logo abaixo do card ─────────
-        with st.expander(f"📋 Como aplicar — recomendação {rank_num}"):
+        with st.expander(f"📋 How to apply — recommendation {rank_num}"):
             g1, g2 = st.columns(2)
             with g1:
-                st.markdown("**Por que esta combinação?**")
+                st.markdown("**Why this combination?**")
                 if tags:
-                    st.markdown(f"Esta estratégia é apontada pela análise como: **{', '.join(tags[:2])}**.")
+                    st.markdown(f"This strategy is identified by the analysis as: **{', '.join(tags[:2])}**.")
                 delta_str = f"+{ev - baseline:.1f}" if ev >= baseline else f"{ev - baseline:.1f}"
                 st.markdown(
-                    f"Com **{ev:.1f} sc/ha** esperados ({delta_str} sc/ha vs. referência regional), "
-                    f"ela representa a melhor relação entre retorno e exposição ao risco climático para o seu contexto."
+                    f"With **{ev:.1f} expected sc/ha** ({delta_str} sc/ha vs. regional reference), "
+                    f"it represents the best balance between return and climate risk exposure for your context."
                 )
                 if mc:
                     st.markdown(
-                        f"Em 90% das simulações, a produtividade ficaria entre "
-                        f"**{mc['p5']:.0f} e {mc['p95']:.0f} sc/ha**."
+                        f"In 90% of simulations, yield would fall between "
+                        f"**{mc['p5']:.0f} and {mc['p95']:.0f} sc/ha**."
                     )
             with g2:
-                st.markdown("**Orientações de aplicação:**")
+                st.markdown("**Application guidance:**")
                 for lbl, guidance in [
-                    ("Janela de Plantio:", _janela_guidance(path["d1"])),
-                    ("Densidade:", _densidade_guidance(path["d4"])),
-                    ("Manejo de Doenças:", _manejo_guidance(path["d5"])),
+                    ("Planting Window:", _janela_guidance(path["d1"])),
+                    ("Density:", _densidade_guidance(path["d4"])),
+                    ("Disease Management:", _manejo_guidance(path["d5"])),
                 ]:
                     if guidance:
                         st.markdown(f"**{lbl}** {guidance}")
@@ -713,28 +713,28 @@ def _render_recommendations(paths, criteria, ev_vals, states, probs, decisions,
                     states, probs, matrix, criteria, baseline,
                 )
                 st.download_button(
-                    f"⬇ Baixar PDF #{rank_num}",
+                    f"⬇ Download PDF #{rank_num}",
                     data=pdf_bytes,
-                    file_name=f"recomendacao_{rank_num}.pdf",
+                    file_name=f"recommendation_{rank_num}.pdf",
                     mime="application/pdf",
                     key=f"pdf_rec_{rank_num}",
                     use_container_width=True,
                 )
             except Exception as e:
-                st.caption(f"PDF indisponível: {e}")
+                st.caption(f"PDF unavailable: {e}")
         with col_csv:
             rows = [{
                 "path": path_idx + 1,
-                "D1_janela": path["d1"],
-                "D4_densidade": path["d4"],
-                "D5_manejo": path["d5"],
+                "D1_window": path["d1"],
+                "D4_density": path["d4"],
+                "D5_management": path["d5"],
                 "EV_sc_ha": ev,
                 **{states[j].split(" ")[0]: matrix[path_idx][j] for j in range(len(states))},
-                **({"MC_media": mc["mean"], "MC_P5": mc["p5"], "MC_P95": mc["p95"]} if mc else {}),
+                **({"MC_mean": mc["mean"], "MC_P5": mc["p5"], "MC_P95": mc["p95"]} if mc else {}),
             }]
             csv_data = pd.DataFrame(rows).to_csv(index=False).encode("utf-8")
             st.download_button(
-                "⬇ Baixar CSV",
+                "⬇ Download CSV",
                 data=csv_data,
                 file_name=f"cenario_{rank_num}.csv",
                 mime="text/csv",
@@ -748,8 +748,8 @@ def _render_recommendations(paths, criteria, ev_vals, states, probs, decisions,
     if user_row and user_row - 1 != optimal_idx:
         gap_user = user_sel["ev"] - criteria["bayes_ev"]["value"]
         st.info(
-            f"A sua janela/densidade/manejo escolhidos têm produtividade esperada de **{user_sel['ev']:.1f} sc/ha**, "
-            f"diferença de **{gap_user:+.1f} sc/ha** em relação à recomendação principal."
+            f"Your chosen window/density/management has an expected yield of **{user_sel['ev']:.1f} sc/ha**, "
+            f"a difference of **{gap_user:+.1f} sc/ha** compared to the top recommendation."
         )
 
 
@@ -760,22 +760,22 @@ def _render_global_actions(result, display, auth, paths, ev_vals, states, probs,
 
     with col1:
         try:
-            user_name = auth.get("name", "Produtor")
+            user_name = auth.get("name", "Farmer")
             pdf_bytes = _build_pdf(
                 result, display, user_name, paths, ev_vals,
                 states, probs, matrix, criteria, baseline,
             )
             st.download_button(
-                "📄 Relatório Completo (PDF)",
+                "📄 Full Report (PDF)",
                 data=pdf_bytes,
-                file_name="relatorio_safra.pdf",
+                file_name="season_report.pdf",
                 mime="application/pdf",
                 key="pdf_global",
                 use_container_width=True,
                 type="primary",
             )
         except Exception as e:
-            st.error(f"Erro ao gerar PDF: {e}")
+            st.error(f"Error generating PDF: {e}")
 
     with col2:
         rows = []
@@ -783,25 +783,25 @@ def _render_global_actions(result, display, auth, paths, ev_vals, states, probs,
             mc = path.get("mc") or {}
             row = {
                 "#": i + 1,
-                "Janela": path["d1"],
-                "Densidade": path["d4"],
-                "Manejo": path["d5"],
-                "Prod. esperada (sc/ha)": ev_vals[i],
+                "Window": path["d1"],
+                "Density": path["d4"],
+                "Management": path["d5"],
+                "Expected yield (sc/ha)": ev_vals[i],
             }
             for j, s in enumerate(states):
                 row[s.split(" ")[0]] = matrix[i][j]
             if mc:
-                row["MC Média"] = mc["mean"]
-                row["MC P5"]    = mc["p5"]
-                row["MC P95"]   = mc["p95"]
-                row["Risco (%)"] = round(mc["p_below"] * 100, 1)
+                row["MC Mean"]   = mc["mean"]
+                row["MC P5"]     = mc["p5"]
+                row["MC P95"]    = mc["p95"]
+                row["Risk (%)"]  = round(mc["p_below"] * 100, 1)
             rows.append(row)
         df = pd.DataFrame(rows)
         csv = df.to_csv(index=False).encode("utf-8")
         st.download_button(
-            "⬇ Tabela Completa (CSV)",
+            "⬇ Full Table (CSV)",
             data=csv,
-            file_name="simulacao_completa.csv",
+            file_name="full_simulation.csv",
             mime="text/csv",
             key="csv_global",
             use_container_width=True,
@@ -818,16 +818,16 @@ def _render_global_actions(result, display, auth, paths, ev_vals, states, probs,
         )
 
     with col4:
-        if st.button("📤 Compartilhar", key="btn_share", use_container_width=True):
-            st.info("Gere o relatório em PDF e compartilhe o arquivo com sua equipe ou consultor agrônomo.")
+        if st.button("📤 Share", key="btn_share", use_container_width=True):
+            st.info("Generate the PDF report and share the file with your team or agronomist.")
 
 
 # ── Análise de Cenários (Payoff Matrix) ───────────────────────────────────────
 
 def _render_matrix(paths, matrix, criteria, ev_vals, states, probs, optimal_idx, user_row):
     prob_str = " · ".join(f"{s.split(' ')[0]} {p:.0%}" for s, p in zip(states, probs))
-    st.markdown(f"**Probabilidades condicionais ao ENSO:** {prob_str}")
-    st.caption("Verde = melhor resultado esperado  ·  Azul = sua seleção")
+    st.markdown(f"**Conditional probabilities given ENSO:** {prob_str}")
+    st.caption("Green = best expected result  ·  Blue = your selection")
 
     max_vals = criteria["maximax"]["criterion_values"]
     min_vals = criteria["wald"]["criterion_values"]
@@ -835,16 +835,16 @@ def _render_matrix(paths, matrix, criteria, ev_vals, states, probs, optimal_idx,
     for i, path in enumerate(paths):
         row = {
             "#": i + 1,
-            "Janela":    _D1_SHORT.get(path["d1"], path["d1"]),
-            "Densidade": _D4_SHORT.get(path["d4"], path["d4"]),
-            "Manejo":    _D5_SHORT.get(path["d5"], path["d5"]),
+            "Window":     _D1_SHORT.get(path["d1"], path["d1"]),
+            "Density":    _D4_SHORT.get(path["d4"], path["d4"]),
+            "Management": _D5_SHORT.get(path["d5"], path["d5"]),
         }
         rain_short = [s.split(" ")[0] for s in states]
         for j, rs in enumerate(rain_short):
             row[rs] = matrix[i][j]
-        row["Prod. Esp."] = ev_vals[i]
-        row["Melhor caso"] = max_vals[i]
-        row["Pior caso"]   = min_vals[i]
+        row["Exp. Yield"] = ev_vals[i]
+        row["Best case"]  = max_vals[i]
+        row["Worst case"] = min_vals[i]
         rows.append(row)
 
     df = pd.DataFrame(rows).set_index("#")
@@ -860,12 +860,12 @@ def _render_matrix(paths, matrix, criteria, ev_vals, states, probs, optimal_idx,
     styled = (
         df.style
         .apply(_highlight, axis=1)
-        .format({**{c: "{:.1f}" for c in rain_short}, "Prod. Esp.": "{:.2f}", "Melhor caso": "{:.1f}", "Pior caso": "{:.1f}"})
-        .background_gradient(subset=["Prod. Esp."], cmap="YlGn")
+        .format({**{c: "{:.1f}" for c in rain_short}, "Exp. Yield": "{:.2f}", "Best case": "{:.1f}", "Worst case": "{:.1f}"})
+        .background_gradient(subset=["Exp. Yield"], cmap="YlGn")
     )
     st.dataframe(styled, use_container_width=True, height=620)
 
-    st.markdown("**Mapa de calor dos cenários**")
+    st.markdown("**Scenario heatmap**")
     heat_df = pd.DataFrame(
         matrix,
         index=[f"#{i+1} {_shorten(p)}" for i, p in enumerate(paths)],
@@ -885,40 +885,40 @@ def _render_matrix(paths, matrix, criteria, ev_vals, states, probs, optimal_idx,
 # ── Critérios de Decisão ──────────────────────────────────────────────────────
 
 def _render_criteria(paths, criteria, ev_vals, optimal_idx, user_row):
-    st.markdown("Cada critério aponta o melhor cenário segundo uma perspectiva diferente de decisão.")
+    st.markdown("Each criterion identifies the best scenario from a different decision perspective.")
 
     crit_rows = []
     for key, label in _CRITERIA_LABELS.items():
         c = criteria[key]
         p = paths[c["path_idx"]]
         crit_rows.append({
-            "Perspectiva":    label,
-            "Melhor cenário": _shorten(p),
-            "Valor (sc/ha)":  c["value"],
+            "Perspective":   label,
+            "Best scenario": _shorten(p),
+            "Value (sc/ha)": c["value"],
         })
     st.dataframe(pd.DataFrame(crit_rows), use_container_width=True, hide_index=True)
 
-    st.markdown("<br>**Produtividade esperada — todos os cenários**", unsafe_allow_html=True)
+    st.markdown("<br>**Expected yield — all scenarios**", unsafe_allow_html=True)
     ev_df = pd.DataFrame({
-        "Cenário": [f"#{i+1} {_shorten(p)}" for i, p in enumerate(paths)],
-        "Prod. Esperada": ev_vals,
+        "Scenario": [f"#{i+1} {_shorten(p)}" for i, p in enumerate(paths)],
+        "Exp. Yield": ev_vals,
         "color": [
             "#2e7d32" if i == optimal_idx
             else "#1565c0" if i + 1 == user_row
             else "#7a7a9a"
             for i in range(len(paths))
         ],
-    }).sort_values("Prod. Esperada", ascending=True)
+    }).sort_values("Exp. Yield", ascending=True)
 
     fig_bar = go_plotly.Figure(go_plotly.Bar(
-        x=ev_df["Prod. Esperada"], y=ev_df["Cenário"],
+        x=ev_df["Exp. Yield"], y=ev_df["Scenario"],
         orientation="h",
         marker_color=ev_df["color"].tolist(),
-        text=[f"{v:.1f}" for v in ev_df["Prod. Esperada"]],
+        text=[f"{v:.1f}" for v in ev_df["Exp. Yield"]],
         textposition="outside",
     ))
     fig_bar.update_layout(
-        height=720, xaxis_title="Produtividade esperada (sc/ha)", yaxis_title="",
+        height=720, xaxis_title="Expected yield (sc/ha)", yaxis_title="",
         margin=dict(l=230, r=60, t=10, b=40), showlegend=False,
         plot_bgcolor="white",
         paper_bgcolor="white",
@@ -931,19 +931,19 @@ def _render_criteria(paths, criteria, ev_vals, optimal_idx, user_row):
         yaxis=dict(tickfont=dict(color="#1a1a2e", size=11)),
     )
     st.plotly_chart(fig_bar, use_container_width=True)
-    st.caption("Verde = melhor resultado esperado  ·  Azul = sua seleção")
+    st.caption("Green = best expected result  ·  Blue = your selection")
 
 
 # ── Visualização Hierárquica ──────────────────────────────────────────────────
 
 def _render_tree(paths, matrix, states, probs, ev_vals, optimal_idx, user_row):
     st.markdown(
-        "Sunburst hierárquico: **Janela → Densidade → Manejo**. "
-        "Cor e tamanho proporcionais à produtividade esperada. Clique para detalhar."
+        "Hierarchical sunburst: **Window → Density → Management**. "
+        "Color and size proportional to expected yield. Click to drill down."
     )
 
     ids, labels, parents, values, colors = [], [], [], [], []
-    ids.append("root"); labels.append("Simulação"); parents.append(""); values.append(0); colors.append(0)
+    ids.append("root"); labels.append("Simulation"); parents.append(""); values.append(0); colors.append(0)
 
     d1_evs: dict[str, list] = {}
     for i, path in enumerate(paths):
@@ -977,7 +977,7 @@ def _render_tree(paths, matrix, states, probs, ev_vals, optimal_idx, user_row):
         marker=dict(colors=colors, colorscale="YlGn", showscale=True,
                     colorbar=dict(title="sc/ha")),
         branchvalues="total",
-        hovertemplate="<b>%{label}</b><br>Prod. esperada: %{color:.1f} sc/ha<extra></extra>",
+        hovertemplate="<b>%{label}</b><br>Expected yield: %{color:.1f} sc/ha<extra></extra>",
         maxdepth=3,
     ))
     fig.update_layout(
@@ -986,26 +986,26 @@ def _render_tree(paths, matrix, states, probs, ev_vals, optimal_idx, user_row):
         legend=dict(font=dict(color="#1a1a2e", size=11)),
     )
     st.plotly_chart(fig, use_container_width=True)
-    st.caption("★ = melhor resultado esperado  ·  ● = sua seleção")
+    st.caption("★ = best expected result  ·  ● = your selection")
 
     rain_short = [s.split(" ")[0] for s in states]
     tree_rows  = []
     for i, path in enumerate(paths):
         row = {
-            "#":      i + 1,
-            "Janela": _D1_SHORT.get(path["d1"], path["d1"]),
-            "Dens.":  _D4_SHORT.get(path["d4"], path["d4"]),
-            "Manejo": _D5_SHORT.get(path["d5"], path["d5"]),
+            "#":       i + 1,
+            "Window":  _D1_SHORT.get(path["d1"], path["d1"]),
+            "Dens.":   _D4_SHORT.get(path["d4"], path["d4"]),
+            "Mgmt.":   _D5_SHORT.get(path["d5"], path["d5"]),
         }
         for j, rs in enumerate(rain_short):
             row[rs] = matrix[i][j]
-        row["Prod. Esp."] = ev_vals[i]
+        row["Exp. Yield"] = ev_vals[i]
         row["Ref"] = "★" if i == optimal_idx else ("●" if i + 1 == user_row else "")
         tree_rows.append(row)
 
     df_tree = pd.DataFrame(tree_rows).set_index("#")
     st.dataframe(
-        df_tree.style.format({rs: "{:.1f}" for rs in rain_short} | {"Prod. Esp.": "{:.2f}"}),
+        df_tree.style.format({rs: "{:.1f}" for rs in rain_short} | {"Exp. Yield": "{:.2f}"}),
         use_container_width=True,
         height=500,
     )

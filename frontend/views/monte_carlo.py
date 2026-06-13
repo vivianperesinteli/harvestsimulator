@@ -23,39 +23,39 @@ def render() -> None:
     decisions = st.session_state.get("sim_decisions")
 
     if not result or not context or not decisions:
-        st.warning("Rode uma simulação primeiro para usar o Monte Carlo.")
-        if st.button("← Ir para Simulação"):
+        st.warning("Run a simulation first to use Monte Carlo.")
+        if st.button("← Go to Simulation"):
             navigate("input")
         return
 
     st.markdown('<div class="page-title">Monte Carlo Simulation</div>', unsafe_allow_html=True)
     st.markdown(
-        '<div class="page-subtitle">Distribuições triangulares para D2 · D3 · D6 + amostragem de chuva por ENSO</div>',
+        '<div class="page-subtitle">Triangular distributions for D2 · D3 · D6 + ENSO rain sampling</div>',
         unsafe_allow_html=True,
     )
     st.markdown("<br>", unsafe_allow_html=True)
 
     # ── Configuração ──────────────────────────────────────────────────────
-    st.markdown('<div class="section-hdr">Configuração</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-hdr">Configuration</div>', unsafe_allow_html=True)
 
     col_iter, col_thresh = st.columns(2)
     with col_iter:
-        n_iter = st.slider("Número de iterações", 1000, 5000, 2000, 500)
+        n_iter = st.slider("Number of iterations", 1000, 5000, 2000, 500)
     with col_thresh:
         fixed_base = result["base_effective"] - result["fixed_adj"]
         threshold = st.slider(
-            "Threshold de risco (sc/ha)",
+            "Risk threshold (sc/ha)",
             min_value=float(int(fixed_base - 20)),
             max_value=float(int(fixed_base + 30)),
             value=float(int(result["baseline"])),
             step=1.0,
-            help="P(yield < threshold) será calculada — quanto abaixo desse valor é inaceitável?",
+            help="P(yield < threshold) will be calculated — how far below this value is unacceptable?",
         )
 
-    st.markdown("**Parâmetros das distribuições triangulares**")
+    st.markdown("**Triangular distribution parameters**")
     st.caption(
-        "Moda = estimativa central (valor do Excel v7). "
-        "Min/Max = limites plausíveis de variação real do efeito de cada variável."
+        "Mode = central estimate (Excel v7 value). "
+        "Min/Max = plausible limits for the real variation of each variable's effect."
     )
 
     params = {}
@@ -63,14 +63,14 @@ def render() -> None:
         with st.expander(meta["label"], expanded=False):
             c1, c2, c3 = st.columns(3)
             with c1:
-                vmin = st.number_input("Mínimo", value=meta["min"], step=0.5, key=f"mc_{key}_min")
+                vmin = st.number_input("Minimum", value=meta["min"], step=0.5, key=f"mc_{key}_min")
             with c2:
-                vmode = st.number_input("Moda", value=meta["mode"], step=0.5, key=f"mc_{key}_mode")
+                vmode = st.number_input("Mode", value=meta["mode"], step=0.5, key=f"mc_{key}_mode")
             with c3:
-                vmax = st.number_input("Máximo", value=meta["max"], step=0.5, key=f"mc_{key}_max")
+                vmax = st.number_input("Maximum", value=meta["max"], step=0.5, key=f"mc_{key}_max")
 
             if not (vmin <= vmode <= vmax):
-                st.error("Necessário: mínimo ≤ moda ≤ máximo")
+                st.error("Required: minimum ≤ mode ≤ maximum")
             else:
                 params[key] = {"min": vmin, "mode": vmode, "max": vmax}
 
@@ -79,11 +79,11 @@ def render() -> None:
     st.markdown("<br>", unsafe_allow_html=True)
 
     if not valid:
-        st.warning("Corrija os parâmetros antes de rodar.")
+        st.warning("Fix the parameters before running.")
         return
 
-    if st.button("▶ Rodar Monte Carlo", type="primary", use_container_width=True):
-        with st.spinner(f"Rodando {n_iter:,} iterações…"):
+    if st.button("▶ Run Monte Carlo", type="primary", use_container_width=True):
+        with st.spinner(f"Running {n_iter:,} iterations…"):
             mc = run_mc(context, decisions, params, n_iter, threshold)
 
         if mc:
@@ -100,11 +100,11 @@ def render() -> None:
     m1, m2, m3, m4, m5 = st.columns(5)
     risk_color = "#c62828" if mc["p_below"] > 0.20 else "#f57c00" if mc["p_below"] > 0.10 else "#2e7d32"
     for col, label, value, sub, color in [
-        (m1, "Média",    mc["mean"], "sc/ha", "#111"),
-        (m2, "Desvio",   mc["std"],  "sc/ha", "#111"),
-        (m3, "P5",       mc["p5"],   "sc/ha (pior 5%)", "#c62828"),
-        (m4, "P95",      mc["p95"],  "sc/ha (melhor 5%)", "#2e7d32"),
-        (m5, f"P(yield < {threshold:.0f})", f"{mc['p_below']:.1%}", "risco", risk_color),
+        (m1, "Mean",     mc["mean"], "sc/ha", "#111"),
+        (m2, "Std Dev",  mc["std"],  "sc/ha", "#111"),
+        (m3, "P5",       mc["p5"],   "sc/ha (worst 5%)", "#c62828"),
+        (m4, "P95",      mc["p95"],  "sc/ha (best 5%)", "#2e7d32"),
+        (m5, f"P(yield < {threshold:.0f})", f"{mc['p_below']:.1%}", "risk", risk_color),
     ]:
         with col:
             st.markdown(f"""<div class="metric-card">
@@ -119,7 +119,7 @@ def render() -> None:
 
     # ── Histograma + densidade ─────────────────────────────────────────────
     with col_hist:
-        st.markdown("**Distribuição de Yield Simulado**")
+        st.markdown("**Simulated Yield Distribution**")
 
         yields_arr = np.array(mc["yields"])
 
@@ -129,17 +129,17 @@ def render() -> None:
         fig_hist.add_trace(go.Histogram(
             x=yields_arr,
             nbinsx=50,
-            name="Frequência",
+            name="Frequency",
             marker_color="rgba(21,101,192,0.5)",
             marker_line=dict(color="rgba(21,101,192,0.8)", width=0.5),
         ))
 
-        # KDE (densidade aproximada via histnorm)
+        # KDE (approximate density via histnorm)
         fig_hist.add_trace(go.Histogram(
             x=yields_arr,
             nbinsx=50,
             histnorm="probability density",
-            name="Densidade",
+            name="Density",
             marker_color="rgba(21,101,192,0.0)",
             marker_line=dict(color="rgba(21,101,192,0)", width=0),
             showlegend=False,
@@ -147,12 +147,12 @@ def render() -> None:
             visible=False,
         ))
 
-        # Linhas verticais de referência
+        # Vertical reference lines
         for val, label, color, dash in [
-            (mc["mean"],      "Média",  "#111",     "solid"),
-            (mc["p5"],        "P5",     "#c62828",  "dash"),
-            (mc["p95"],       "P95",    "#2e7d32",  "dash"),
-            (threshold,       "Threshold", "#f57c00", "dot"),
+            (mc["mean"],      "Mean",      "#111",     "solid"),
+            (mc["p5"],        "P5",        "#c62828",  "dash"),
+            (mc["p95"],       "P95",       "#2e7d32",  "dash"),
+            (threshold,       "Threshold", "#f57c00",  "dot"),
         ]:
             fig_hist.add_vline(
                 x=val, line_color=color, line_dash=dash, line_width=1.5,
@@ -161,13 +161,13 @@ def render() -> None:
                 annotation_font_size=10,
             )
 
-        # Área de risco (abaixo do threshold)
+        # Risk area (below threshold)
         x_risk = yields_arr[yields_arr < threshold]
         if len(x_risk):
             fig_hist.add_trace(go.Histogram(
                 x=x_risk,
                 nbinsx=50,
-                name=f"Abaixo de {threshold:.0f} sc/ha",
+                name=f"Below {threshold:.0f} sc/ha",
                 marker_color="rgba(198,40,40,0.35)",
                 marker_line=dict(color="rgba(198,40,40,0.5)", width=0.5),
             ))
@@ -176,7 +176,7 @@ def render() -> None:
             height=380,
             barmode="overlay",
             xaxis_title="Yield (sc/ha)",
-            yaxis_title="Frequência",
+            yaxis_title="Frequency",
             margin=dict(t=20, l=20, r=20, b=40),
             legend=dict(orientation="h", yanchor="bottom", y=1.02),
             plot_bgcolor="white",
@@ -187,35 +187,35 @@ def render() -> None:
         )
         st.plotly_chart(fig_hist, use_container_width=True)
         st.caption(
-            f"Média: {mc['mean']:.1f} · P5: {mc['p5']:.1f} · P95: {mc['p95']:.1f} · "
-            f"Desvio: {mc['std']:.1f} sc/ha  —  {n_iter:,} iterações"
+            f"Mean: {mc['mean']:.1f} · P5: {mc['p5']:.1f} · P95: {mc['p95']:.1f} · "
+            f"Std Dev: {mc['std']:.1f} sc/ha  —  {n_iter:,} iterations"
         )
 
     # ── Tornado chart ──────────────────────────────────────────────────────
     with col_tornado:
-        st.markdown("**Tornado — Contribuição para a Variância**")
-        st.caption("Correlação de Pearson entre cada input estocástico e o yield simulado.")
+        st.markdown("**Tornado — Contribution to Variance**")
+        st.caption("Pearson correlation between each stochastic input and the simulated yield.")
 
         tornado = mc["tornado"]
         t_df = pd.DataFrame([
-            {"Variável": name, "Correlação": v["correlation"]}
+            {"Variable": name, "Correlation": v["correlation"]}
             for name, v in tornado.items()
-        ]).sort_values("Correlação", key=abs, ascending=True)
+        ]).sort_values("Correlation", key=abs, ascending=True)
 
-        colors_t = ["#2e7d32" if c >= 0 else "#c62828" for c in t_df["Correlação"]]
+        colors_t = ["#2e7d32" if c >= 0 else "#c62828" for c in t_df["Correlation"]]
 
         fig_tornado = go.Figure(go.Bar(
-            x=t_df["Correlação"],
-            y=t_df["Variável"],
+            x=t_df["Correlation"],
+            y=t_df["Variable"],
             orientation="h",
             marker_color=colors_t,
-            text=[f"{c:+.3f}" for c in t_df["Correlação"]],
+            text=[f"{c:+.3f}" for c in t_df["Correlation"]],
             textposition="outside",
         ))
         fig_tornado.add_vline(x=0, line_color="#999", line_width=1)
         fig_tornado.update_layout(
             height=380,
-            xaxis_title="Correlação com yield",
+            xaxis_title="Correlation with yield",
             xaxis_range=[-1, 1],
             margin=dict(t=10, l=10, r=60, b=40),
             plot_bgcolor="white",
@@ -225,11 +225,11 @@ def render() -> None:
             showlegend=False,
         )
         st.plotly_chart(fig_tornado, use_container_width=True)
-        st.caption("Quanto maior o valor absoluto, mais essa variável impacta a incerteza do resultado.")
+        st.caption("The larger the absolute value, the more that variable impacts result uncertainty.")
 
     # ── Comparação com path ótimo ──────────────────────────────────────────
-    st.markdown('<div class="section-hdr">Comparação — Sua Seleção vs Path Ótimo (EV Bayes)</div>', unsafe_allow_html=True)
-    st.caption("Monte Carlo rodado também para o path com maior EV — distribuições lado a lado.")
+    st.markdown('<div class="section-hdr">Comparison — Your Selection vs Optimal Path (Bayes EV)</div>', unsafe_allow_html=True)
+    st.caption("Monte Carlo also run for the highest EV path — distributions side by side.")
 
     optimal_idx = result["criteria"]["bayes_ev"]["path_idx"]
     optimal_path = result["paths"][optimal_idx]
@@ -250,16 +250,16 @@ def render() -> None:
     )
 
     if same_path:
-        st.info("Sua seleção já é o path ótimo — não há comparação adicional.")
+        st.info("Your selection is already the optimal path — no additional comparison.")
     else:
-        with st.spinner("Calculando Monte Carlo para o path ótimo…"):
+        with st.spinner("Calculating Monte Carlo for the optimal path…"):
             mc_opt = run_mc(context, optimal_decisions, params, n_iter, threshold)
 
         if mc_opt:
             fig_comp = go.Figure()
             for yields_list, name, color in [
-                (mc["yields"],     "Sua seleção", "rgba(21,101,192,0.5)"),
-                (mc_opt["yields"], "Path ótimo",  "rgba(46,125,50,0.5)"),
+                (mc["yields"],     "Your selection", "rgba(21,101,192,0.5)"),
+                (mc_opt["yields"], "Optimal path",   "rgba(46,125,50,0.5)"),
             ]:
                 fig_comp.add_trace(go.Histogram(
                     x=yields_list, nbinsx=50, name=name,
@@ -268,16 +268,16 @@ def render() -> None:
                 ))
 
             fig_comp.add_vline(x=mc["mean"],     line_color="#1565c0", line_dash="dash", line_width=1.5,
-                               annotation_text=f"Média seleção: {mc['mean']:.1f}", annotation_font_size=10)
+                               annotation_text=f"Selection mean: {mc['mean']:.1f}", annotation_font_size=10)
             fig_comp.add_vline(x=mc_opt["mean"], line_color="#2e7d32", line_dash="dash", line_width=1.5,
-                               annotation_text=f"Média ótimo: {mc_opt['mean']:.1f}", annotation_font_size=10,
+                               annotation_text=f"Optimal mean: {mc_opt['mean']:.1f}", annotation_font_size=10,
                                annotation_position="top left")
 
             fig_comp.update_layout(
                 barmode="overlay",
                 height=360,
                 xaxis_title="Yield (sc/ha)",
-                yaxis_title="Frequência",
+                yaxis_title="Frequency",
                 margin=dict(t=10, l=20, r=20, b=40),
                 legend=dict(orientation="h", yanchor="bottom", y=1.02),
                 plot_bgcolor="white",
@@ -291,16 +291,16 @@ def render() -> None:
             c1, c2 = st.columns(2)
             with c1:
                 st.markdown(f"""<div class="metric-card">
-                    <div class="mc-label">Gap de média</div>
+                    <div class="mc-label">Mean gap</div>
                     <div class="mc-value" style="color:#2e7d32">+{mc_opt['mean'] - mc['mean']:.1f}</div>
-                    <div class="mc-sub">sc/ha favorecendo o path ótimo</div>
+                    <div class="mc-sub">sc/ha favoring the optimal path</div>
                 </div>""", unsafe_allow_html=True)
             with c2:
                 risk_gap = mc["p_below"] - mc_opt["p_below"]
                 st.markdown(f"""<div class="metric-card">
-                    <div class="mc-label">Gap de risco P(yield < {threshold:.0f})</div>
+                    <div class="mc-label">Risk gap P(yield < {threshold:.0f})</div>
                     <div class="mc-value" style="color:#c62828">{risk_gap:+.1%}</div>
-                    <div class="mc-sub">risco adicional da sua seleção</div>
+                    <div class="mc-sub">additional risk of your selection</div>
                 </div>""", unsafe_allow_html=True)
 
     # ── Export CSV ─────────────────────────────────────────────────────────
@@ -312,7 +312,7 @@ def render() -> None:
 
     csv_bytes = df_export.to_csv().encode("utf-8")
     st.download_button(
-        label="⬇ Download resultados (CSV)",
+        label="⬇ Download results (CSV)",
         data=csv_bytes,
         file_name="monte_carlo_results.csv",
         mime="text/csv",
