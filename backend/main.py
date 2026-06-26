@@ -33,7 +33,7 @@ def health():
 
 @app.get("/api/nodes")
 def get_nodes():
-    """Retorna as opções disponíveis para todos os nós C1–C7 e D1–D6."""
+    """Returns available options for all nodes C1-C7 and D1-D6."""
     return {
         "context":   {k: {"label": v["label"], "options": list(v["options"].keys())} for k, v in CONTEXT_NODES.items()},
         "decisions": {k: {"label": v["label"], "options": list(v["options"].keys())} for k, v in DECISION_NODES.items()},
@@ -42,22 +42,22 @@ def get_nodes():
 
 @app.post("/api/simulate", response_model=SimulateResponse)
 def simulate(req: SimulateRequest):
-    # Valida que todas as chaves obrigatórias estão presentes
+    # Validate that all required keys are present
     missing_ctx = [k for k in CONTEXT_NODES if k not in req.context]
     missing_dec = [k for k in DECISION_NODES if k not in req.decisions]
     if missing_ctx or missing_dec:
         raise HTTPException(
             status_code=422,
-            detail=f"Chaves faltando — contexto: {missing_ctx}, decisões: {missing_dec}",
+            detail=f"Missing keys — context: {missing_ctx}, decisions: {missing_dec}",
         )
 
-    # Valida que os valores são opções válidas
+    # Validate that values are valid options
     for k, v in req.context.items():
         if k in CONTEXT_NODES and v not in CONTEXT_NODES[k]["options"]:
-            raise HTTPException(status_code=422, detail=f"Valor inválido para {k}: '{v}'")
+            raise HTTPException(status_code=422, detail=f"Invalid value for {k}: '{v}'")
     for k, v in req.decisions.items():
         if k in DECISION_NODES and v not in DECISION_NODES[k]["options"]:
-            raise HTTPException(status_code=422, detail=f"Valor inválido para {k}: '{v}'")
+            raise HTTPException(status_code=422, detail=f"Invalid value for {k}: '{v}'")
 
     return compute_simulation(req.context, req.decisions)
 

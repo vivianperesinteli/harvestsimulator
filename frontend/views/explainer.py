@@ -6,23 +6,11 @@ import pandas as pd
 import plotly.graph_objects as go
 
 from frontend.navigation import go as nav_go
+from frontend.i18n import t
 
 # ── Step definitions ──────────────────────────────────────────────────────────
-
-_STEPS = [
-    (1,  "Starting Point",         "Historical average yield as the model baseline"),
-    (2,  "Field Context",          "7 field factors adjust the baseline"),
-    (3,  "Producer Decisions",     "6 decisions — fixed and variable"),
-    (4,  "27 Possible Paths",      "Combinations of variable decisions"),
-    (5,  "Weather & ENSO",         "Climate scenarios and their probabilities"),
-    (6,  "Interaction Effects",    "Combinations that amplify or penalize the outcome"),
-    (7,  "Payoff Matrix",          "27 paths × 3 climates = all possible outcomes"),
-    (8,  "Decision Criteria",      "6 perspectives for choosing the best path"),
-    (9,  "Risk Analysis",          "10,000 simulations estimate the confidence interval"),
-    (10, "Final Recommendation",   "The model identifies the combination with the highest expected return"),
-]
-
-_N = len(_STEPS)
+# Step titles/descs are now pulled from i18n at render time
+_N = 10
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -32,10 +20,18 @@ def _step_key() -> int:
     return st.session_state.explainer_step
 
 
-def _progress_bar(current: int) -> None:
+def _get_steps(lang: str) -> list[tuple[int, str, str]]:
+    return [
+        (i, t(f"expl_step{i}_title", lang), t(f"expl_step{i}_desc", lang))
+        for i in range(1, _N + 1)
+    ]
+
+
+def _progress_bar(current: int, lang: str) -> None:
     pct = int((current / _N) * 100)
+    steps = _get_steps(lang)
     steps_html = ""
-    for num, title, _ in _STEPS:
+    for num, title, _ in steps:
         if num < current:
             cls = "exp-step-done"
             icon = "✓"
@@ -60,34 +56,36 @@ def _progress_bar(current: int) -> None:
     """, unsafe_allow_html=True)
 
 
-def _nav_buttons(current: int) -> None:
+def _nav_buttons(current: int, lang: str) -> None:
     c_back, c_info, c_next = st.columns([1, 4, 1])
     with c_back:
         if current > 1:
-            if st.button("← Previous", use_container_width=True):
+            if st.button(t("expl_prev_btn", lang), use_container_width=True):
                 st.session_state.explainer_step -= 1
                 st.rerun()
     with c_info:
         st.markdown(
             f'<div style="text-align:center;font-size:0.78rem;color:#6b6b8a;padding-top:8px">'
-            f'Step {current} of {_N}</div>',
+            f'{t("expl_step_of", lang, current=current, total=_N)}</div>',
             unsafe_allow_html=True,
         )
     with c_next:
         if current < _N:
-            if st.button("Next →", type="primary", use_container_width=True):
+            if st.button(t("expl_next_btn", lang), type="primary", use_container_width=True):
                 st.session_state.explainer_step += 1
                 st.rerun()
         else:
-            if st.button("Restart", use_container_width=True):
+            if st.button(t("expl_restart_btn", lang), use_container_width=True):
                 st.session_state.explainer_step = 1
                 st.rerun()
 
 
-def _step_header(num: int, title: str, desc: str) -> None:
+def _step_header(num: int, lang: str) -> None:
+    title = t(f"expl_step{num}_title", lang)
+    desc  = t(f"expl_step{num}_desc", lang)
     st.markdown(f"""
     <div class="exp-step-header">
-        <div class="exp-step-number">Step {num}</div>
+        <div class="exp-step-number">{t("expl_step_label", lang)} {num}</div>
         <div class="exp-step-title">{title}</div>
         <div class="exp-step-desc">{desc}</div>
     </div>
@@ -114,56 +112,43 @@ def _info_card(title: str, body: str, color: str = "#1a5c38") -> None:
 
 # ── Steps ─────────────────────────────────────────────────────────────────────
 
-def _render_step_1() -> None:
-    _step_header(1, "Starting Point", "Mato Grosso's historical average yield serves as the model anchor")
+def _render_step_1(lang: str) -> None:
+    _step_header(1, lang)
 
     c1, c2 = st.columns([1, 2], gap="large")
     with c1:
-        st.markdown("""
+        st.markdown(f"""
         <div style="text-align:center;padding:40px 20px;background:#fff;border-radius:12px;border:1px solid #e4e4f0;box-shadow:0 2px 8px rgba(0,0,0,0.06)">
-            <div style="font-size:0.7rem;font-weight:700;color:#6b6b8a;text-transform:uppercase;letter-spacing:0.1em">Baseline</div>
+            <div style="font-size:0.7rem;font-weight:700;color:#6b6b8a;text-transform:uppercase;letter-spacing:0.1em">{t("expl_s1_baseline_label", lang)}</div>
             <div style="font-size:5rem;font-weight:900;color:#1a5c38;line-height:1">60</div>
             <div style="font-size:1rem;color:#3a3a5c;font-weight:600">sc/ha</div>
-            <div style="font-size:0.72rem;color:#6b6b8a;margin-top:8px">Source: CONAB · MT 2023/24</div>
+            <div style="font-size:0.72rem;color:#6b6b8a;margin-top:8px">{t("expl_s1_source", lang)}</div>
         </div>
         """, unsafe_allow_html=True)
 
     with c2:
-        _info_card("Why 60 sc/ha?",
-            "The average yield in Mato Grosso for the 2023/24 season was 60 bags per hectare, "
-            "according to CONAB's survey. This figure represents the performance of an average "
-            "producer in the region — before any adjustments for specific field conditions.")
-
+        _info_card(t("expl_s1_why_title", lang), t("expl_s1_why_body", lang))
         st.markdown("<br>", unsafe_allow_html=True)
-        _formula_box(
-            "Yield = <strong>60</strong> + context adjustments + decision adjustments + climate adjustment",
-            label="Model general equation"
-        )
-
+        _formula_box(t("expl_s1_formula", lang), label=t("expl_s1_formula_label", lang))
         st.markdown("<br>", unsafe_allow_html=True)
-        _info_card("How adjustments work",
-            "Each factor — soil, climate, management, cultivar — adds or subtracts bags per hectare "
-            "relative to this reference. Producers with conditions better than average receive a "
-            "positive adjustment; worse conditions receive a negative adjustment.",
-            color="#1565c0")
+        _info_card(t("expl_s1_adj_title", lang), t("expl_s1_adj_body", lang), color="#1565c0")
 
 
-def _render_step_2(result: dict | None) -> None:
-    _step_header(2, "Field Context",
-        "7 factors outside the producer's control describe the field conditions")
+def _render_step_2(result: dict | None, lang: str) -> None:
+    _step_header(2, lang)
 
     col_table, col_chart = st.columns([1, 1], gap="large")
 
     with col_table:
-        st.markdown("**The 7 context factors and their impact (sc/ha):**")
+        st.markdown(f"**{t('expl_s2_table_title', lang)}**")
         labels = [
-            ("C1", "Region",          "Favorable (Sorriso, Sinop...)", "+5", "Challenging (Primavera, Querência)", "−6"),
-            ("C2", "Soil Texture",    "Clay / well-structured",        "+5", "Sandy / low retention",              "−7"),
-            ("C3", "Soil pH",         "Adequate 5.5–6.5",              "+4", "Critical <5.0 or >6.8",              "−6"),
-            ("C4", "Drainage",        "No waterlogging",               "+3", "Frequent flooding",                  "−8"),
-            ("C5", "Soil Type",       "Latosol / Nitosol",             "+5", "Neosol / Gleisol",                   "−7"),
-            ("C6", "Area",            "Above 200 ha",                  "+2", "Up to 50 ha",                        "−1"),
-            ("C7", "Climate Outlook", "El Niño",                       "+3", "La Niña",                            "−3"),
+            ("C1", t("expl_s2_c1", lang),  "Favorável (Sorriso, Sinop...)", "+5", "Desafiador (Primavera, Querência)", "−6"),
+            ("C2", t("expl_s2_c2", lang),  "Argila / bem estruturado",       "+5", "Arenoso / baixa retenção",          "−7"),
+            ("C3", t("expl_s2_c3", lang),  "Adequado 5.5–6.5",               "+4", "Crítico <5.0 ou >6.8",              "−6"),
+            ("C4", t("expl_s2_c4", lang),  "Sem encharcamento",              "+3", "Alagamento frequente",              "−8"),
+            ("C5", t("expl_s2_c5", lang),  "Latossolo / Nitossolo",          "+5", "Neossolo / Gleissolo",              "−7"),
+            ("C6", t("expl_s2_c6", lang),  "Acima de 200 ha",                "+2", "Até 50 ha",                         "−1"),
+            ("C7", t("expl_s2_c7", lang),  "El Niño",                        "+3", "La Niña",                           "−3"),
         ]
         for cod, nome, melhor, val_m, pior, val_p in labels:
             st.markdown(f"""
@@ -177,28 +162,28 @@ def _render_step_2(result: dict | None) -> None:
             """, unsafe_allow_html=True)
 
     with col_chart:
-        st.markdown("**Adjustment range per factor:**")
-        nomes = ["Region", "Texture", "pH", "Drainage", "Soil Type", "Area", "ENSO"]
+        st.markdown(f"**{t('expl_s2_chart_title', lang)}**")
+        nomes = [
+            t("expl_s2_c1", lang), t("expl_s2_c2", lang), t("expl_s2_c3", lang),
+            t("expl_s2_c4", lang), t("expl_s2_c5", lang), t("expl_s2_c6", lang),
+            "ENSO",
+        ]
         positivos = [5, 5, 4, 3, 5, 2, 3]
         negativos = [-6, -7, -6, -8, -7, -1, -3]
 
         fig = go.Figure()
         fig.add_bar(x=positivos, y=nomes, orientation="h",
-                    marker_color="#2d8a56", name="Max gain",
+                    marker_color="#2d8a56", name=t("expl_s2_max_gain", lang),
                     text=[f"+{v}" for v in positivos], textposition="outside")
         fig.add_bar(x=negativos, y=nomes, orientation="h",
-                    marker_color="#c62828", name="Max penalty",
+                    marker_color="#c62828", name=t("expl_s2_max_penalty", lang),
                     text=[str(v) for v in negativos], textposition="outside")
         fig.update_layout(
             barmode="overlay", height=280, margin=dict(l=80, r=60, t=10, b=30),
             showlegend=True, plot_bgcolor="white", paper_bgcolor="white",
-            xaxis=dict(
-                gridcolor="#d8d8e8", zeroline=True, zerolinecolor="#666",
-                tickfont=dict(color="#1a1a2e", size=11),
-            ),
-            yaxis=dict(
-                tickfont=dict(color="#1a1a2e", size=11),
-            ),
+            xaxis=dict(gridcolor="#d8d8e8", zeroline=True, zerolinecolor="#666",
+                       tickfont=dict(color="#1a1a2e", size=11)),
+            yaxis=dict(tickfont=dict(color="#1a1a2e", size=11)),
             legend=dict(orientation="h", y=-0.18, font=dict(color="#1a1a2e", size=11)),
             font=dict(color="#1a1a2e", size=11),
         )
@@ -210,39 +195,36 @@ def _render_step_2(result: dict | None) -> None:
             sign = "+" if ctx_adj >= 0 else ""
             st.markdown(f"""
             <div style="background:#f1f8f3;border-left:3px solid #1a5c38;padding:10px 14px;border-radius:0 8px 8px 0;margin-top:8px">
-                <span style="font-size:0.75rem;color:#1a5c38;font-weight:700">YOUR SIMULATION RESULT</span><br>
+                <span style="font-size:0.75rem;color:#1a5c38;font-weight:700">{t("expl_s2_your_result", lang)}</span><br>
                 <span style="font-size:1.4rem;font-weight:800;color:{color}">{sign}{ctx_adj:.1f} sc/ha</span>
-                <span style="font-size:0.8rem;color:#3a3a5c"> context adjustment</span><br>
-                <span style="font-size:0.8rem;color:#1a5c38">Adjusted base: {result['context_base']:.0f} sc/ha</span>
+                <span style="font-size:0.8rem;color:#3a3a5c"> {t("expl_s2_ctx_adj", lang)}</span><br>
+                <span style="font-size:0.8rem;color:#1a5c38">{t("expl_s2_adj_base", lang)}: {result['context_base']:.0f} sc/ha</span>
             </div>
             """, unsafe_allow_html=True)
 
 
-def _render_step_3(result: dict | None) -> None:
-    _step_header(3, "Producer Decisions",
-        "6 management decisions — three shift all scenarios equally, three create the scenarios")
+def _render_step_3(result: dict | None, lang: str) -> None:
+    _step_header(3, lang)
 
-    _formula_box(
-        "Effective base = 60 + context + <strong style='color:#b35c00'>D2 (cultivar) + D3 (seed treatment) + D6 (planter)</strong> "
-        "+ <strong style='color:#1a5c38'>D1 (window) + D4 (density) + D5 (disease management)</strong>"
-    )
-
+    _formula_box(t("expl_s3_formula", lang))
     st.markdown("<br>", unsafe_allow_html=True)
 
     c_fixed, c_var = st.columns(2, gap="large")
 
     with c_fixed:
-        st.markdown("""
+        st.markdown(f"""
         <div style="background:#fff8e1;border:1px solid #ffe082;border-radius:10px;padding:20px">
             <div style="font-size:0.7rem;font-weight:700;color:#b35c00;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:12px">
-                🔒 Fixed Decisions — shift all 27 scenarios equally
+                🔒 {t("expl_s3_fixed_hdr", lang)}
             </div>
         """, unsafe_allow_html=True)
-        for cod, nome, desc, faixa in [
-            ("D2", "Cultivar",       "Genetic potential of the variety",        "−8 to +6 sc/ha"),
-            ("D3", "Seed Treatment", "Industrial seed treatment (TSI)",          "−5 to +3 sc/ha"),
-            ("D6", "Planter",        "Planting technology and precision",        "−4 to +3 sc/ha"),
+        for cod, nome_key, desc_key, faixa in [
+            ("D2", "expl_s3_d2_name", "expl_s3_d2_desc", "−8 to +6 sc/ha"),
+            ("D3", "expl_s3_d3_name", "expl_s3_d3_desc", "−5 to +3 sc/ha"),
+            ("D6", "expl_s3_d6_name", "expl_s3_d6_desc", "−4 to +3 sc/ha"),
         ]:
+            nome = t(nome_key, lang)
+            desc = t(desc_key, lang)
             st.markdown(f"""
             <div style="padding:8px 0;border-bottom:1px solid #ffe082">
                 <span style="font-weight:700;color:#1a1a2e">{cod} · {nome}</span><br>
@@ -253,23 +235,26 @@ def _render_step_3(result: dict | None) -> None:
         if result:
             st.markdown(f"""
             <div style="margin-top:10px;font-size:0.8rem;color:#b35c00;font-weight:700">
-                Fixed adjustment in your simulation: {result['fixed_adj']:+.1f} sc/ha
+                {t("expl_s3_fixed_adj", lang)}: {result['fixed_adj']:+.1f} sc/ha
             </div>
             """, unsafe_allow_html=True)
         st.markdown("</div>", unsafe_allow_html=True)
 
     with c_var:
-        st.markdown("""
+        st.markdown(f"""
         <div style="background:#e8f5e9;border:1px solid #a5d6a7;border-radius:10px;padding:20px">
             <div style="font-size:0.7rem;font-weight:700;color:#1a5c38;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:12px">
-                🔀 Variable Decisions — each combination generates a different scenario
+                🔀 {t("expl_s3_var_hdr", lang)}
             </div>
         """, unsafe_allow_html=True)
-        for cod, nome, desc, faixa, opts in [
-            ("D1", "Planting Window",    "Sowing period",              "−8 to +4 sc/ha", "3 options"),
-            ("D4", "Density",            "Seeds per hectare",          "−1 to +2 sc/ha", "3 options"),
-            ("D5", "Disease Management", "Number of fungicide sprays", "−7 to +5 sc/ha", "3 options"),
+        for cod, nome_key, desc_key, faixa, opts_key in [
+            ("D1", "expl_s3_d1_name", "expl_s3_d1_desc", "−8 to +4 sc/ha", "expl_s3_3opts"),
+            ("D4", "expl_s3_d4_name", "expl_s3_d4_desc", "−1 to +2 sc/ha", "expl_s3_3opts"),
+            ("D5", "expl_s3_d5_name", "expl_s3_d5_desc", "−7 to +5 sc/ha", "expl_s3_3opts"),
         ]:
+            nome = t(nome_key, lang)
+            desc = t(desc_key, lang)
+            opts = t(opts_key, lang)
             st.markdown(f"""
             <div style="padding:8px 0;border-bottom:1px solid #a5d6a7">
                 <span style="font-weight:700;color:#1a1a2e">{cod} · {nome}</span><br>
@@ -277,36 +262,39 @@ def _render_step_3(result: dict | None) -> None:
                 <span style="font-size:0.72rem;color:#1a5c38;font-weight:600">{faixa} · {opts}</span>
             </div>
             """, unsafe_allow_html=True)
-        st.markdown("""
+        st.markdown(f"""
         <div style="margin-top:10px;font-size:0.8rem;color:#1a5c38;font-weight:700">
-            3 × 3 × 3 = 27 combinations evaluated simultaneously
+            {t("expl_s3_combo_note", lang)}
         </div>
         """, unsafe_allow_html=True)
         st.markdown("</div>", unsafe_allow_html=True)
 
     st.markdown("<br>", unsafe_allow_html=True)
-    _info_card("Why separate fixed from variable?",
-        "Fixed decisions (D2, D3, D6) shift all 27 paths by the same value — "
-        "they don't change which combination is best, only the absolute yield level. "
-        "Variable decisions (D1, D4, D5) change the ranking among paths because each "
-        "interacts differently with climate scenarios.", color="#1565c0")
+    _info_card(t("expl_s3_why_title", lang), t("expl_s3_why_body", lang), color="#1565c0")
 
 
-def _render_step_4(result: dict | None) -> None:
-    _step_header(4, "27 Possible Paths",
-        "D1 × D4 × D5 = 3 × 3 × 3 = 27 combinations evaluated in parallel")
+def _render_step_4(result: dict | None, lang: str) -> None:
+    _step_header(4, lang)
 
     c_tree, c_explain = st.columns([3, 2], gap="large")
 
     with c_tree:
-        st.markdown("**Combination structure:**")
+        st.markdown(f"**{t('expl_s4_combo_title', lang)}**")
+
+        # Labels for EN/PT depend on lang
+        d1_opts = [t("expl_early", lang), t("expl_optimal", lang), t("expl_late", lang)]
+        d4_opts = [t("expl_low", lang),   t("expl_medium", lang),  t("expl_high", lang)]
+        d5_opts = [t("expl_intensive", lang), t("expl_standard", lang), t("expl_reduced", lang)]
 
         rows = []
-        for i, d1 in enumerate(["Early", "Optimal", "Late"]):
-            for j, d4 in enumerate(["Low", "Medium", "High"]):
-                for k, d5 in enumerate(["Intensive", "Standard", "Reduced"]):
+        for i, d1 in enumerate(d1_opts):
+            for j, d4 in enumerate(d4_opts):
+                for k, d5 in enumerate(d5_opts):
                     path_num = i * 9 + j * 3 + k + 1
-                    rows.append({"#": path_num, "D1 · Window": d1, "D4 · Density": d4, "D5 · Management": d5})
+                    rows.append({"#": path_num,
+                                 t("expl_s4_col_d1", lang): d1,
+                                 t("expl_s4_col_d4", lang): d4,
+                                 t("expl_s4_col_d5", lang): d5})
 
         df = pd.DataFrame(rows).set_index("#")
         highlight_idx = None
@@ -321,35 +309,34 @@ def _render_step_4(result: dict | None) -> None:
 
         st.dataframe(df.style.apply(_hl, axis=1), use_container_width=True, height=400)
         if highlight_idx:
-            st.caption(f"★ row {highlight_idx} = best path in your simulation")
+            st.caption(t("expl_s4_best_row", lang, row=highlight_idx))
 
     with c_explain:
-        _info_card("What are these 27 paths?",
-            "Each row in the table represents a complete management strategy: "
-            "a specific planting window, a specific density, and a specific level "
-            "of disease protection. The simulator evaluates all of them simultaneously.")
-
+        _info_card(t("expl_s4_what_title", lang), t("expl_s4_what_body", lang))
         st.markdown("<br>", unsafe_allow_html=True)
 
         st.markdown("""
         <div style="background:#ffffff;border:1.5px solid #c4c4d4;border-radius:10px;padding:16px;box-shadow:0 2px 8px rgba(0,0,0,0.08)">
-            <div style="font-size:0.7rem;font-weight:700;color:#4a4a6a;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:10px">Combination logic</div>
-        """, unsafe_allow_html=True)
-        for n, label, sub in [
-            ("3", "window options",     "Early · Optimal · Late"),
-            ("×", "", ""),
-            ("3", "density options",    "Low · Medium · High"),
-            ("×", "", ""),
-            ("3", "management options", "Intensive · Standard · Reduced"),
-            ("=", "", ""),
-            ("27", "paths evaluated",  "in parallel, for each climate scenario"),
+            <div style="font-size:0.7rem;font-weight:700;color:#4a4a6a;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:10px">""" +
+            t("expl_s4_logic_title", lang) +
+            """</div>""", unsafe_allow_html=True)
+        for num_val, label_key, sub_key in [
+            ("3",  "expl_s4_window_opts", "expl_s4_window_sub"),
+            ("×",  "",                    ""),
+            ("3",  "expl_s4_density_opts","expl_s4_density_sub"),
+            ("×",  "",                    ""),
+            ("3",  "expl_s4_mgmt_opts",   "expl_s4_mgmt_sub"),
+            ("=",  "",                    ""),
+            ("27", "expl_s4_paths",       "expl_s4_paths_sub"),
         ]:
-            if n in ("×", "="):
-                st.markdown(f'<div style="text-align:center;font-size:1.4rem;color:#1a5c38;font-weight:700;line-height:1.2">{n}</div>', unsafe_allow_html=True)
+            if num_val in ("×", "="):
+                st.markdown(f'<div style="text-align:center;font-size:1.4rem;color:#1a5c38;font-weight:700;line-height:1.2">{num_val}</div>', unsafe_allow_html=True)
             else:
+                label = t(label_key, lang)
+                sub   = t(sub_key, lang)
                 st.markdown(f"""
                 <div style="display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid #f0f0f0">
-                    <div style="font-size:1.6rem;font-weight:800;color:#1a5c38;min-width:36px;text-align:right">{n}</div>
+                    <div style="font-size:1.6rem;font-weight:800;color:#1a5c38;min-width:36px;text-align:right">{num_val}</div>
                     <div>
                         <div style="font-size:0.82rem;font-weight:600;color:#1a1a2e">{label}</div>
                         <div style="font-size:0.7rem;color:#6b6b8a">{sub}</div>
@@ -359,25 +346,24 @@ def _render_step_4(result: dict | None) -> None:
         st.markdown("</div>", unsafe_allow_html=True)
 
 
-def _render_step_5(result: dict | None) -> None:
-    _step_header(5, "Weather & ENSO",
-        "Each of the 27 paths is evaluated under 3 climate states with probabilities conditional on ENSO")
+def _render_step_5(result: dict | None, lang: str) -> None:
+    _step_header(5, lang)
 
     from backend.data import RAIN_STATES, RAIN_PROBS
 
     c_prob, c_explain = st.columns([3, 2], gap="large")
 
     with c_prob:
-        st.markdown("**Rainfall probabilities during R3–R6 (grain filling):**")
+        st.markdown(f"**{t('expl_s5_prob_title', lang)}**")
         enso_labels = {
             "El Niño (chuva regular em MT)":    "El Niño",
-            "Neutro":                            "Neutral",
+            "Neutro":                            t("expl_s5_neutral", lang),
             "La Niña (chuva concentrada/curta)": "La Niña",
         }
         rain_labels = {
-            "Seca (<150 mm)":      "Dry",
-            "Normal (150–250 mm)": "Normal",
-            "Úmida (>250 mm)":     "Wet",
+            "Seca (<150 mm)":      t("expl_s5_dry", lang),
+            "Normal (150–250 mm)": t("expl_s5_normal", lang),
+            "Úmida (>250 mm)":     t("expl_s5_wet", lang),
         }
         rain_adjs = {k: v for k, v in RAIN_STATES.items()}
 
@@ -404,18 +390,22 @@ def _render_step_5(result: dict | None) -> None:
 
         st.dataframe(df_prob.style.apply(_hl_enso, axis=1), use_container_width=True)
         if user_enso:
-            st.caption(f"★ highlighted row = ENSO in your simulation ({user_enso})")
+            st.caption(t("expl_s5_enso_caption", lang, enso=user_enso))
 
         st.markdown("<br>", unsafe_allow_html=True)
         fig = go.Figure()
-        colors = {"Dry": "#c62828", "Normal": "#f57c00", "Wet": "#1565c0"}
+        colors = {
+            t("expl_s5_dry", lang):    "#c62828",
+            t("expl_s5_normal", lang): "#f57c00",
+            t("expl_s5_wet", lang):    "#1565c0",
+        }
         for enso_key, enso_short in enso_labels.items():
             for rain_key, rain_short in rain_labels.items():
                 prob = RAIN_PROBS[enso_key][rain_key]
                 fig.add_bar(
                     x=[enso_short], y=[prob],
                     name=rain_short,
-                    marker_color=colors[rain_short],
+                    marker_color=colors.get(rain_short, "#999"),
                     showlegend=(enso_short == "El Niño"),
                     text=f"{prob:.0%}", textposition="inside",
                 )
@@ -424,81 +414,63 @@ def _render_step_5(result: dict | None) -> None:
             margin=dict(l=20, r=20, t=10, b=30),
             plot_bgcolor="white", paper_bgcolor="white",
             legend=dict(orientation="h", y=-0.2, font=dict(color="#1a1a2e", size=11)),
-            yaxis=dict(
-                tickformat=".0%", gridcolor="#d8d8e8",
-                tickfont=dict(color="#1a1a2e", size=11),
-            ),
+            yaxis=dict(tickformat=".0%", gridcolor="#d8d8e8",
+                       tickfont=dict(color="#1a1a2e", size=11)),
             xaxis=dict(tickfont=dict(color="#1a1a2e", size=11)),
             font=dict(color="#1a1a2e", size=11),
         )
         st.plotly_chart(fig, use_container_width=True)
 
     with c_explain:
-        _info_card("Why use ENSO?",
-            "El Niño and La Niña significantly alter rainfall distribution in Mato Grosso "
-            "during grain filling (R3–R6). In La Niña years, the probability of drought "
-            "rises to 50% — completely changing which strategy is safest.")
-
+        _info_card(t("expl_s5_why_enso_title", lang), t("expl_s5_why_enso_body", lang))
         st.markdown("<br>", unsafe_allow_html=True)
-        _info_card("Adjustment per climate state",
-            "• Dry (<150 mm): −8 sc/ha\n"
-            "• Normal (150–250 mm): +2 sc/ha\n"
-            "• Wet (>250 mm): +4 sc/ha\n\n"
-            "These values are applied on top of each path to generate the final matrix.",
-            color="#1565c0")
-
+        _info_card(t("expl_s5_adj_title", lang), t("expl_s5_adj_body", lang), color="#1565c0")
         st.markdown("<br>", unsafe_allow_html=True)
-        _info_card("Result",
-            "Each of the 27 paths is evaluated under 3 climates → "
-            "a matrix of 27 × 3 = 81 possible outcomes.",
-            color="#b35c00")
+        _info_card(t("expl_s5_result_title", lang), t("expl_s5_result_body", lang), color="#b35c00")
 
 
-def _render_step_6() -> None:
-    _step_header(6, "Interaction Effects",
-        "Some variable combinations produce effects that go beyond the sum of their parts")
+def _render_step_6(lang: str) -> None:
+    _step_header(6, lang)
 
-    st.markdown("""
+    st.markdown(f"""
     <div style="background:#fff3e0;border-left:4px solid #f57c00;padding:12px 16px;border-radius:0 8px 8px 0;margin-bottom:20px;font-size:0.85rem;color:#3a3a5c">
-        <strong>What is an interaction?</strong> The additive model assumes each factor contributes independently.
-        But in practice, a high-potential cultivar + poor disease management is <em>more</em> damaging than the sum of the two.
-        Interaction terms capture these effects.
+        <strong>{t("expl_s6_what_title", lang)}</strong> {t("expl_s6_what_body", lang)}
     </div>
     """, unsafe_allow_html=True)
 
     inter_data = [
         {
-            "titulo": "Interaction 1 — Cultivar × Disease Management (D2 × D5)",
+            "titulo": t("expl_s6_inter1_title", lang),
             "cor": "#1a5c38",
-            "desc": "High genetic potential cultivars are more susceptible to rust. With adequate management, they deliver their potential. With poor management, high potential becomes a liability.",
+            "desc": t("expl_s6_inter1_desc", lang),
             "linhas": [
-                ("High potential + Intensive management", "+2.0 sc/ha", "#2e7d32"),
-                ("High potential + Reduced management",   "−2.0 sc/ha", "#c62828"),
-                ("Intermediate + Intensive management",   "+0.5 sc/ha", "#2e7d32"),
-                ("Legacy + Intensive management",         "−1.0 sc/ha", "#c62828"),
+                (t("expl_s6_i1_r1", lang), "+2.0 sc/ha", "#2e7d32"),
+                (t("expl_s6_i1_r2", lang), "−2.0 sc/ha", "#c62828"),
+                (t("expl_s6_i1_r3", lang), "+0.5 sc/ha", "#2e7d32"),
+                (t("expl_s6_i1_r4", lang), "−1.0 sc/ha", "#c62828"),
             ],
         },
         {
-            "titulo": "Interaction 2 — Drainage × Rainfall (C4 × Climate)",
+            "titulo": t("expl_s6_inter2_title", lang),
             "cor": "#1565c0",
-            "desc": "Poor drainage doesn't penalize in dry years — it can even help by retaining moisture. The problem appears in wet years, when waterlogging causes root asphyxiation.",
+            "desc": t("expl_s6_inter2_desc", lang),
             "linhas": [
-                ("Poor drainage + Wet year",      "−4.0 sc/ha", "#c62828"),
-                ("Poor drainage + Normal year",   "−1.5 sc/ha", "#f57c00"),
-                ("Poor drainage + Dry year",      "+4.0 sc/ha", "#2e7d32"),
-                ("Moderate drainage + Wet",       "−1.5 sc/ha", "#f57c00"),
-                ("Good drainage + Wet",           "+1.0 sc/ha", "#2e7d32"),
+                (t("expl_s6_i2_r1", lang), "−4.0 sc/ha", "#c62828"),
+                (t("expl_s6_i2_r2", lang), "−1.5 sc/ha", "#f57c00"),
+                (t("expl_s6_i2_r3", lang), "+4.0 sc/ha", "#2e7d32"),
+                (t("expl_s6_i2_r4", lang), "−1.5 sc/ha", "#f57c00"),
+                (t("expl_s6_i2_r5", lang), "+1.0 sc/ha", "#2e7d32"),
             ],
         },
         {
-            "titulo": "Interaction 3 — Planting Window × ENSO (D1 × C7)",
+            "titulo": t("expl_s6_inter3_title", lang),
             "cor": "#b35c00",
-            "desc": "Late planting in a La Niña year is the riskiest combination: grain filling falls during peak dry spells. In El Niño, planting late has fewer consequences.",
+            "desc": t("expl_s6_inter3_desc", lang),
             "linhas": [
-                ("Late + La Niña",    "−2.5 sc/ha", "#c62828"),
-                ("Late + El Niño",    "+1.0 sc/ha", "#2e7d32"),
-                ("Optimal + El Niño", "+1.0 sc/ha", "#2e7d32"),
-                ("Early + La Niña",   "−1.0 sc/ha", "#f57c00"),
+                (t("expl_s6_i3_r1", lang), "−2.5 sc/ha", "#c62828"),
+                (t("expl_s6_i3_r2", lang), "+1.0 sc/ha", "#2e7d32"),
+                (t("expl_s6_i3_r3", lang), "+1.0 sc/ha", "#2e7d32"),
+                (t("expl_s6_i3_r4", lang), "−1.0 sc/ha", "#f57c00"),
             ],
         },
     ]
@@ -518,12 +490,11 @@ def _render_step_6() -> None:
                     """, unsafe_allow_html=True)
 
 
-def _render_step_7(result: dict | None) -> None:
-    _step_header(7, "Payoff Matrix",
-        "Each path × climate combination produces an expected yield value")
+def _render_step_7(result: dict | None, lang: str) -> None:
+    _step_header(7, lang)
 
     if not result:
-        st.info("Run a simulation to see your payoff matrix here.")
+        st.info(t("expl_s7_no_sim", lang))
         _formula_box("Payoff[path i, climate j] = effective_base + D1ᵢ + D4ᵢ + D5ᵢ + rainⱼ + interactions")
         return
 
@@ -536,22 +507,22 @@ def _render_step_7(result: dict | None) -> None:
     _formula_box("Payoff[path i, climate j] = effective_base + D1ᵢ + D4ᵢ + D5ᵢ + rainⱼ + interactions")
     st.markdown("<br>", unsafe_allow_html=True)
 
-    d1_s = {"Precoce (até 15/out)": "Early", "Ótima (16/out – 10/nov)": "Optimal", "Tardia (após 10/nov)": "Late"}
-    d4_s = {"Baixa (≤280k sementes/ha)": "Low", "Média (280k–340k)": "Medium", "Alta (>340k)": "High"}
-    d5_s = {"Alto (≥3 fung. + monitor ferrugem)": "Intensive", "Padrão (2 aplicações)": "Standard", "Baixo (1 ou nenhuma)": "Reduced"}
+    d1_s = {"Precoce (até 15/out)": t("expl_early", lang), "Ótima (16/out – 10/nov)": t("expl_optimal", lang), "Tardia (após 10/nov)": t("expl_late", lang)}
+    d4_s = {"Baixa (≤280k sementes/ha)": t("expl_low", lang), "Média (280k–340k)": t("expl_medium", lang), "Alta (>340k)": t("expl_high", lang)}
+    d5_s = {"Alto (≥3 fung. + monitor ferrugem)": t("expl_intensive", lang), "Padrão (2 aplicações)": t("expl_standard", lang), "Baixo (1 ou nenhuma)": t("expl_reduced", lang)}
     rain_s = [s.split(" ")[0] for s in states]
 
     rows = []
     for i, path in enumerate(paths):
         row = {
             "#": i + 1,
-            "Window": d1_s.get(path["d1"], path["d1"]),
-            "Density": d4_s.get(path["d4"], path["d4"]),
-            "Management": d5_s.get(path["d5"], path["d5"]),
+            t("expl_s4_col_d1", lang): d1_s.get(path["d1"], path["d1"]),
+            t("expl_s4_col_d4", lang): d4_s.get(path["d4"], path["d4"]),
+            t("expl_s4_col_d5", lang): d5_s.get(path["d5"], path["d5"]),
         }
         for j, rs in enumerate(rain_s):
             row[rs] = matrix[i][j]
-        row["Exp. Yield"] = round(ev_vals[i], 1)
+        row[t("expl_s7_ev_col", lang)] = round(ev_vals[i], 1)
         rows.append(row)
 
     df = pd.DataFrame(rows).set_index("#")
@@ -562,56 +533,48 @@ def _render_step_7(result: dict | None) -> None:
         return [""] * len(row)
 
     baseline = result["baseline"]
+    ev_col   = t("expl_s7_ev_col", lang)
     styled = (
         df.style
         .apply(_hl, axis=1)
-        .format({rs: "{:.1f}" for rs in rain_s} | {"Exp. Yield": "{:.1f}"})
-        .background_gradient(subset=["Exp. Yield"], cmap="YlGn")
+        .format({rs: "{:.1f}" for rs in rain_s} | {ev_col: "{:.1f}"})
+        .background_gradient(subset=[ev_col], cmap="YlGn")
     )
     st.dataframe(styled, use_container_width=True, height=500)
-    st.caption(f"★ green row = best path (Exp. Yield = {ev_vals[opt_idx]:.1f} sc/ha) · Reference: {baseline} sc/ha")
+    st.caption(t("expl_s7_caption", lang, ev=f"{ev_vals[opt_idx]:.1f}", baseline=baseline))
 
     c1, c2, c3 = st.columns(3)
     with c1:
-        st.metric("Best possible outcome", f"{max(max(r) for r in matrix):.1f} sc/ha")
+        st.metric(t("expl_s7_best_out", lang), f"{max(max(r) for r in matrix):.1f} sc/ha")
     with c2:
-        st.metric("Worst possible outcome", f"{min(min(r) for r in matrix):.1f} sc/ha")
+        st.metric(t("expl_s7_worst_out", lang), f"{min(min(r) for r in matrix):.1f} sc/ha")
     with c3:
-        st.metric("Total range", f"{max(max(r) for r in matrix) - min(min(r) for r in matrix):.1f} sc/ha")
+        st.metric(t("expl_s7_range", lang), f"{max(max(r) for r in matrix) - min(min(r) for r in matrix):.1f} sc/ha")
 
 
-def _render_step_8(result: dict | None) -> None:
-    _step_header(8, "Decision Criteria",
-        "6 different perspectives for choosing the best path in the matrix")
+def _render_step_8(result: dict | None, lang: str) -> None:
+    _step_header(8, lang)
 
     criterios = [
-        ("bayes_ev", "Best expected outcome",
-         "Weights each outcome by its climate probability. The primary criterion — maximizes expected value.",
-         "#1a5c38", "⭐ Primary"),
-        ("wald", "Safest in worst case",
-         "Selects the path guaranteeing the highest outcome even in the worst possible climate. Conservative profile.",
-         "#1565c0", "🛡️ Conservative"),
-        ("maximax", "Maximum yield potential",
-         "Selects the path with the highest possible outcome, ignoring risk. Optimistic profile.",
-         "#b35c00", "🚀 Optimistic"),
-        ("laplace", "Average across all scenarios",
-         "Treats all climates as equally likely. An unbiased reference.",
-         "#6b6b8a", "⚖️ Neutral"),
-        ("hurwicz", "Risk/opportunity balance",
-         "Weights 50% best case + 50% worst case. Compromise between optimism and caution.",
-         "#7b1fa2", "🎯 Balanced"),
-        ("savage", "Minimum regret",
-         "Minimizes how much the producer would lose by not having chosen the optimal strategy for each climate.",
-         "#c62828", "😌 No regret"),
+        ("bayes_ev", t("expl_s8_bayes_name", lang),   t("expl_s8_bayes_desc", lang),   "#1a5c38", t("expl_s8_badge_primary", lang)),
+        ("wald",     t("expl_s8_wald_name", lang),    t("expl_s8_wald_desc", lang),    "#1565c0", t("expl_s8_badge_conservative", lang)),
+        ("maximax",  t("expl_s8_maximax_name", lang), t("expl_s8_maximax_desc", lang), "#b35c00", t("expl_s8_badge_optimistic", lang)),
+        ("laplace",  t("expl_s8_laplace_name", lang), t("expl_s8_laplace_desc", lang), "#6b6b8a", t("expl_s8_badge_neutral", lang)),
+        ("hurwicz",  t("expl_s8_hurwicz_name", lang), t("expl_s8_hurwicz_desc", lang), "#7b1fa2", t("expl_s8_badge_balanced", lang)),
+        ("savage",   t("expl_s8_savage_name", lang),  t("expl_s8_savage_desc", lang),  "#c62828", t("expl_s8_badge_noregret", lang)),
     ]
 
     c_left, c_right = st.columns(2, gap="large")
     cols = [c_left, c_right]
 
+    d1_s = {"Precoce (até 15/out)": t("expl_early", lang), "Ótima (16/out – 10/nov)": t("expl_optimal", lang), "Tardia (após 10/nov)": t("expl_late", lang)}
+    d5_s = {"Alto (≥3 fung. + monitor ferrugem)": t("expl_intensive", lang), "Padrão (2 aplicações)": t("expl_standard", lang), "Baixo (1 ou nenhuma)": t("expl_reduced", lang)}
+
     for i, (key, nome, desc, cor, badge) in enumerate(criterios):
         with cols[i % 2]:
             winner_idx = None
             winner_val = None
+            winner_label = ""
             if result:
                 crit = result["criteria"].get(key, {})
                 winner_idx = crit.get("path_idx")
@@ -619,8 +582,6 @@ def _render_step_8(result: dict | None) -> None:
                 paths = result["paths"]
                 if winner_idx is not None:
                     p = paths[winner_idx]
-                    d1_s = {"Precoce (até 15/out)": "Early", "Ótima (16/out – 10/nov)": "Optimal", "Tardia (após 10/nov)": "Late"}
-                    d5_s = {"Alto (≥3 fung. + monitor ferrugem)": "Intensive", "Padrão (2 aplicações)": "Standard", "Baixo (1 ou nenhuma)": "Reduced"}
                     winner_label = f"{d1_s.get(p['d1'], p['d1'])} · {d5_s.get(p['d5'], p['d5'])}"
 
             st.markdown(f"""
@@ -641,35 +602,30 @@ def _render_step_8(result: dict | None) -> None:
         opt_idx = result["criteria"]["bayes_ev"]["path_idx"]
         all_same = all(result["criteria"][k]["path_idx"] == opt_idx for k in ["bayes_ev", "wald", "laplace"])
         if all_same:
-            st.success("✓ All primary criteria point to the same path — robust recommendation.")
+            st.success(t("expl_s8_all_agree", lang))
         else:
-            st.info("ℹ️ Different criteria point to different paths — the model uses Bayes EV as the primary criterion.")
+            st.info(t("expl_s8_differ", lang))
 
 
-def _render_step_9(result: dict | None) -> None:
-    _step_header(9, "Risk Analysis",
-        "10,000 simulations per path estimate the yield confidence interval")
+def _render_step_9(result: dict | None, lang: str) -> None:
+    _step_header(9, lang)
 
     c_explain, c_result = st.columns([1, 1], gap="large")
 
     with c_explain:
-        _info_card("How Monte Carlo works",
-            "For each path, the model draws 10,000 scenarios where D2 (cultivar), "
-            "D3 (seed treatment) and D6 (planter) vary randomly — because even with a "
-            "choice made, the actual result can vary due to execution conditions, "
-            "seed lot quality, field response, etc.")
-
+        _info_card(t("expl_s9_how_title", lang), t("expl_s9_how_body", lang))
         st.markdown("<br>", unsafe_allow_html=True)
 
         st.markdown("""
         <div style="background:#ffffff;border:1.5px solid #c4c4d4;border-radius:10px;padding:16px;box-shadow:0 2px 8px rgba(0,0,0,0.08)">
-            <div style="font-size:0.7rem;font-weight:700;color:#4a4a6a;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:10px">Stochastic variables</div>
-        """, unsafe_allow_html=True)
+            <div style="font-size:0.7rem;font-weight:700;color:#4a4a6a;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:10px">""" +
+            t("expl_s9_stochastic", lang) +
+            """</div>""", unsafe_allow_html=True)
         for var, dist in [
-            ("D2 · Cultivar",        "Triangular(−8, 0, +6)"),
-            ("D3 · Seed Treatment",  "Triangular(−5, 0, +3)"),
-            ("D6 · Planter",         "Triangular(−4, 0, +3)"),
-            ("Rainfall R3–R6",       "Discrete by P(rain|ENSO)"),
+            (t("expl_s9_d2", lang),   "Triangular(−8, 0, +6)"),
+            (t("expl_s9_d3", lang),   "Triangular(−5, 0, +3)"),
+            (t("expl_s9_d6", lang),   "Triangular(−4, 0, +3)"),
+            (t("expl_s9_rain", lang), "Discrete by P(rain|ENSO)"),
         ]:
             st.markdown(f"""
             <div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #f0f0f0;font-size:0.78rem">
@@ -684,22 +640,22 @@ def _render_step_9(result: dict | None) -> None:
             opt_idx = result["criteria"]["bayes_ev"]["path_idx"]
             mc = result["paths"][opt_idx].get("mc") or {}
             if mc:
-                st.markdown("**Simulated distribution — best path:**")
+                st.markdown(f"**{t('expl_s9_dist_title', lang)}**")
                 import numpy as np
                 rng = np.random.default_rng(42)
                 sim_yields = rng.normal(mc["mean"], mc["std"], 500)
                 fig = go.Figure()
                 fig.add_histogram(x=sim_yields, nbinsx=30, marker_color="#2d8a56",
-                                  opacity=0.75, name="Simulations")
+                                  opacity=0.75, name=t("expl_s9_sim_label", lang))
                 fig.add_vline(x=mc["p5"],  line_dash="dot", line_color="#c62828",
                               annotation_text=f"P5: {mc['p5']:.0f}", annotation_position="top left")
                 fig.add_vline(x=mc["p95"], line_dash="dot", line_color="#1565c0",
                               annotation_text=f"P95: {mc['p95']:.0f}", annotation_position="top right")
                 fig.add_vline(x=mc["mean"], line_dash="solid", line_color="#1a5c38",
-                              annotation_text=f"Mean: {mc['mean']:.0f}", annotation_position="top right")
+                              annotation_text=f"{t('mc_stat_mean', lang)}: {mc['mean']:.0f}", annotation_position="top right")
                 fig.update_layout(height=280, margin=dict(l=20, r=20, t=30, b=30),
                                   plot_bgcolor="white", paper_bgcolor="white", showlegend=False,
-                                  xaxis_title="sc/ha", yaxis_title="Frequency",
+                                  xaxis_title="sc/ha", yaxis_title=t("mc_freq_axis", lang),
                                   xaxis=dict(gridcolor="#d8d8e8", tickfont=dict(color="#1a1a2e", size=11),
                                              title_font=dict(color="#1a1a2e")),
                                   yaxis=dict(gridcolor="#d8d8e8", tickfont=dict(color="#1a1a2e", size=11),
@@ -709,50 +665,45 @@ def _render_step_9(result: dict | None) -> None:
 
                 c_p5, c_mean, c_p95 = st.columns(3)
                 with c_p5:
-                    st.metric("P5 (worst 5%)", f"{mc['p5']:.0f} sc/ha")
+                    st.metric(t("mc_unit_worst", lang), f"{mc['p5']:.0f} sc/ha")
                 with c_mean:
-                    st.metric("Mean", f"{mc['mean']:.0f} sc/ha")
+                    st.metric(t("mc_stat_mean", lang), f"{mc['mean']:.0f} sc/ha")
                 with c_p95:
-                    st.metric("P95 (best 5%)", f"{mc['p95']:.0f} sc/ha")
+                    st.metric(t("mc_unit_best", lang), f"{mc['p95']:.0f} sc/ha")
 
                 risk = mc.get("p_below", 0)
                 risk_color = "🔴" if risk > 0.25 else "🟡" if risk > 0.10 else "🟢"
                 st.markdown(f"""
                 <div style="background:#f8f9fa;border-radius:8px;padding:12px 16px;margin-top:8px;font-size:0.84rem">
-                    {risk_color} <strong>{risk:.0%} chance</strong> of falling below the 60 sc/ha reference
+                    {risk_color} <strong>{risk:.0%} {t("expl_s9_risk_chance", lang)}</strong>
                 </div>
                 """, unsafe_allow_html=True)
         else:
-            st.info("Run a simulation to see the Monte Carlo distribution here.")
-            _info_card("What the results show",
-                "P5 = in 95% of simulations, yield exceeded this value\n"
-                "P95 = in 95% of simulations, yield stayed below this value\n"
-                "The P5–P95 range is the 90% confidence interval.")
+            st.info(t("expl_s9_no_sim", lang))
+            _info_card(t("expl_s9_results_title", lang), t("expl_s9_results_body", lang))
 
 
-def _render_step_10(result: dict | None) -> None:
-    _step_header(10, "Final Recommendation",
-        "The model combines all previous steps to identify the strategy with the highest expected return")
+def _render_step_10(result: dict | None, lang: str) -> None:
+    _step_header(10, lang)
 
     _formula_box(
         "Recommendation = argmax<sub>i</sub> Σⱼ [ Payoff(i,j) + Interactions(i,j) ] × P(rainⱼ | ENSO)"
     )
 
     st.markdown("<br>", unsafe_allow_html=True)
-
-    st.markdown("**Complete pipeline — from field to recommendation:**")
+    st.markdown(f"**{t('expl_s10_pipeline_title', lang)}**")
 
     pipeline = [
-        ("60 sc/ha",         "CONAB Baseline",                    "#e8f5e9", "#1a5c38"),
-        ("+ Context",        "C1–C7 · soil, region, climate",     "#e3f2fd", "#1565c0"),
-        ("+ Fixed decisions","D2 · D3 · D6",                      "#fff8e1", "#b35c00"),
-        ("× 27 paths",       "D1 × D4 × D5",                      "#f3e5f5", "#7b1fa2"),
-        ("× 3 climates",     "Dry · Normal · Wet by ENSO",         "#e0f2f1", "#00695c"),
-        ("+ Interactions",   "3 amplification terms",              "#fce4ec", "#c62828"),
-        ("→ 27×3 Matrix",    "81 possible outcomes",               "#fff3e0", "#e65100"),
-        ("→ Bayes EV",       "Probability-weighted scoring",        "#e8f5e9", "#1a5c38"),
-        ("→ Monte Carlo",    "10,000 sim. · P5/P95",               "#e3f2fd", "#1565c0"),
-        ("🎯 Recommendation","Best strategy for your field",        "#1a5c38", "#ffffff"),
+        ("60 sc/ha",         t("expl_s10_p1", lang),  "#e8f5e9", "#1a5c38"),
+        ("+ Context",        t("expl_s10_p2", lang),  "#e3f2fd", "#1565c0"),
+        ("+ " + t("expl_s10_p3_label", lang), t("expl_s10_p3", lang), "#fff8e1", "#b35c00"),
+        ("× 27 " + t("expl_s10_p4_label", lang), t("expl_s10_p4", lang), "#f3e5f5", "#7b1fa2"),
+        ("× 3 " + t("expl_s10_p5_label", lang), t("expl_s10_p5", lang), "#e0f2f1", "#00695c"),
+        ("+ " + t("expl_s10_p6_label", lang), t("expl_s10_p6", lang), "#fce4ec", "#c62828"),
+        ("→ 27×3 " + t("expl_s10_p7_label", lang), t("expl_s10_p7", lang), "#fff3e0", "#e65100"),
+        ("→ Bayes EV",       t("expl_s10_p8", lang),  "#e8f5e9", "#1a5c38"),
+        ("→ Monte Carlo",    t("expl_s10_p9", lang),  "#e3f2fd", "#1565c0"),
+        ("🎯 " + t("expl_s10_p10_label", lang), t("expl_s10_p10", lang), "#1a5c38", "#ffffff"),
     ]
 
     cols_pipe = st.columns(5)
@@ -769,7 +720,7 @@ def _render_step_10(result: dict | None) -> None:
 
     if result:
         st.markdown("<br>", unsafe_allow_html=True)
-        st.markdown("**Your simulation result:**")
+        st.markdown(f"**{t('expl_s10_your_result', lang)}**")
 
         opt_idx  = result["criteria"]["bayes_ev"]["path_idx"]
         opt_path = result["paths"][opt_idx]
@@ -777,45 +728,45 @@ def _render_step_10(result: dict | None) -> None:
         baseline = result["baseline"]
         mc       = opt_path.get("mc") or {}
 
-        d1_s = {"Precoce (até 15/out)": "Early", "Ótima (16/out – 10/nov)": "Optimal", "Tardia (após 10/nov)": "Late"}
-        d4_s = {"Baixa (≤280k sementes/ha)": "Low", "Média (280k–340k)": "Medium", "Alta (>340k)": "High"}
-        d5_s = {"Alto (≥3 fung. + monitor ferrugem)": "Intensive", "Padrão (2 aplicações)": "Standard", "Baixo (1 ou nenhuma)": "Reduced"}
+        d1_s = {"Precoce (até 15/out)": t("expl_early", lang), "Ótima (16/out – 10/nov)": t("expl_optimal", lang), "Tardia (após 10/nov)": t("expl_late", lang)}
+        d4_s = {"Baixa (≤280k sementes/ha)": t("expl_low", lang), "Média (280k–340k)": t("expl_medium", lang), "Alta (>340k)": t("expl_high", lang)}
+        d5_s = {"Alto (≥3 fung. + monitor ferrugem)": t("expl_intensive", lang), "Padrão (2 aplicações)": t("expl_standard", lang), "Baixo (1 ou nenhuma)": t("expl_reduced", lang)}
 
         delta = opt_ev - baseline
         st.markdown(f"""
         <div style="background:linear-gradient(135deg,#0d2b18,#1a5c38);border-radius:12px;
                     padding:28px 32px;color:#fff;margin-top:8px">
             <div style="font-size:0.7rem;font-weight:700;color:#76c442;text-transform:uppercase;
-                        letter-spacing:0.12em;margin-bottom:10px">🎯 Primary Recommendation</div>
+                        letter-spacing:0.12em;margin-bottom:10px">🎯 {t("expl_s10_primary_rec", lang)}</div>
             <div style="display:flex;gap:40px;flex-wrap:wrap">
                 <div>
-                    <div style="font-size:0.7rem;color:rgba(255,255,255,0.6)">Planting Window</div>
+                    <div style="font-size:0.7rem;color:rgba(255,255,255,0.6)">{t("expl_s10_window_label", lang)}</div>
                     <div style="font-size:1rem;font-weight:700">{d1_s.get(opt_path["d1"], opt_path["d1"])}</div>
                 </div>
                 <div>
-                    <div style="font-size:0.7rem;color:rgba(255,255,255,0.6)">Density</div>
+                    <div style="font-size:0.7rem;color:rgba(255,255,255,0.6)">{t("expl_s10_density_label", lang)}</div>
                     <div style="font-size:1rem;font-weight:700">{d4_s.get(opt_path["d4"], opt_path["d4"])}</div>
                 </div>
                 <div>
-                    <div style="font-size:0.7rem;color:rgba(255,255,255,0.6)">Disease Management</div>
+                    <div style="font-size:0.7rem;color:rgba(255,255,255,0.6)">{t("expl_s10_mgmt_label", lang)}</div>
                     <div style="font-size:1rem;font-weight:700">{d5_s.get(opt_path["d5"], opt_path["d5"])}</div>
                 </div>
                 <div>
-                    <div style="font-size:0.7rem;color:rgba(255,255,255,0.6)">Expected Yield</div>
+                    <div style="font-size:0.7rem;color:rgba(255,255,255,0.6)">{t("expl_s10_ev_label", lang)}</div>
                     <div style="font-size:1.6rem;font-weight:900;color:#76c442">{opt_ev:.1f} sc/ha</div>
-                    <div style="font-size:0.75rem;color:rgba(255,255,255,0.7)">{delta:+.1f} sc/ha vs. reference</div>
+                    <div style="font-size:0.75rem;color:rgba(255,255,255,0.7)">{delta:+.1f} sc/ha {t("expl_s10_vs_ref", lang)}</div>
                 </div>
-                {f'<div><div style="font-size:0.7rem;color:rgba(255,255,255,0.6)">90% Interval</div><div style="font-size:0.92rem;font-weight:600">{mc["p5"]:.0f} – {mc["p95"]:.0f} sc/ha</div></div>' if mc else ""}
+                {f'<div><div style="font-size:0.7rem;color:rgba(255,255,255,0.6)">{t("expl_s10_interval_label", lang)}</div><div style="font-size:0.92rem;font-weight:600">{mc["p5"]:.0f} – {mc["p95"]:.0f} sc/ha</div></div>' if mc else ""}
             </div>
         </div>
         """, unsafe_allow_html=True)
 
         st.markdown("<br>", unsafe_allow_html=True)
-        if st.button("View full results →", type="primary"):
+        if st.button(t("expl_s10_view_results", lang), type="primary"):
             nav_go("results")
     else:
-        st.info("Run a simulation to see the final recommendation here.")
-        if st.button("Go to New Simulation →", type="primary"):
+        st.info(t("expl_s10_no_sim", lang))
+        if st.button(t("expl_s10_go_sim", lang), type="primary"):
             nav_go("input")
 
 
@@ -866,40 +817,41 @@ _EXPLAINER_CSS = """
 # ── Main render ───────────────────────────────────────────────────────────────
 
 def render() -> None:
+    lang = st.session_state.get("lang", "en")
     st.markdown(_EXPLAINER_CSS, unsafe_allow_html=True)
 
     result = st.session_state.get("sim_result")
 
-    st.markdown('<div class="page-title">How We Calculate</div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="page-title">{t("expl_title", lang)}</div>', unsafe_allow_html=True)
     st.markdown(
-        '<div class="page-subtitle">Understand each step of the model — from baseline to final recommendation</div>',
+        f'<div class="page-subtitle">{t("expl_subtitle", lang)}</div>',
         unsafe_allow_html=True,
     )
 
     if result:
-        st.caption("✓ Using data from your last simulation")
+        st.caption(t("expl_has_sim", lang))
     else:
-        st.caption("ℹ️ Run a simulation to see your real data at each step")
+        st.caption(t("expl_no_sim_caption", lang))
 
     st.markdown("<br>", unsafe_allow_html=True)
 
     current = _step_key()
-    _progress_bar(current)
+    _progress_bar(current, lang)
     st.markdown("---")
 
     step_map = {
-        1:  lambda: _render_step_1(),
-        2:  lambda: _render_step_2(result),
-        3:  lambda: _render_step_3(result),
-        4:  lambda: _render_step_4(result),
-        5:  lambda: _render_step_5(result),
-        6:  lambda: _render_step_6(),
-        7:  lambda: _render_step_7(result),
-        8:  lambda: _render_step_8(result),
-        9:  lambda: _render_step_9(result),
-        10: lambda: _render_step_10(result),
+        1:  lambda: _render_step_1(lang),
+        2:  lambda: _render_step_2(result, lang),
+        3:  lambda: _render_step_3(result, lang),
+        4:  lambda: _render_step_4(result, lang),
+        5:  lambda: _render_step_5(result, lang),
+        6:  lambda: _render_step_6(lang),
+        7:  lambda: _render_step_7(result, lang),
+        8:  lambda: _render_step_8(result, lang),
+        9:  lambda: _render_step_9(result, lang),
+        10: lambda: _render_step_10(result, lang),
     }
     step_map[current]()
 
     st.markdown("---")
-    _nav_buttons(current)
+    _nav_buttons(current, lang)

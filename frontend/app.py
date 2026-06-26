@@ -1,9 +1,9 @@
 """
 Decision Tree Simulator — Frontend Streamlit
-Bayer CropScience × Inteli · Sprint 3 · Grupo 2
+Soy · Mato Grosso
 
-Iniciar backend:  uvicorn backend.main:app --reload --port 8000
-Iniciar frontend: streamlit run frontend/app.py
+Start backend:  uvicorn backend.main:app --reload --port 8000
+Start frontend: streamlit run frontend/app.py
 """
 
 import sys
@@ -14,9 +14,11 @@ if str(_ROOT) not in sys.path:
     sys.path.insert(0, str(_ROOT))
 
 import streamlit as st
+import streamlit.components.v1 as components
 from frontend.styles    import inject_styles
 from frontend.auth      import is_authenticated, render_auth, logout
 from frontend.navigation import go
+from frontend.i18n      import t
 
 st.set_page_config(
     page_title="Harvest Simulator · Soy MT",
@@ -34,14 +36,19 @@ if not is_authenticated():
 
 # ── Session defaults ──────────────────────────────────────────────────────────
 for k, v in {
-    "page":          "home",
-    "sim_result":    None,
-    "sim_context":   None,
-    "sim_decisions": None,
-    "sim_display":   None,
-    "mc_result":     None,
-    "sim_history":   [],
-    "input_step":    1,
+    "page":             "home",
+    "lang":             "en",
+    "sim_result":       None,
+    "sim_context":      None,
+    "sim_decisions":    None,
+    "sim_display":      None,
+    "mc_result":        None,
+    "sim_history":      [],
+    "input_step":       1,
+    "talhao_id":        None,
+    "talhao_nome":      None,
+    "talhao_prefill":   None,
+    "_plot_delete_id":  None,
 }.items():
     if k not in st.session_state:
         st.session_state[k] = v
@@ -50,18 +57,19 @@ for k, v in {
 # ── Página Home ───────────────────────────────────────────────────────────────
 def _render_home():
     auth = st.session_state.auth
+    lang = st.session_state.lang
     st.markdown(
-        f'<div class="page-title">Hello, {auth["name"].split()[0]}!</div>',
+        f'<div class="page-title">{t("home_hello", lang, name=auth["name"].split()[0])}</div>',
         unsafe_allow_html=True,
     )
     st.markdown(
-        '<div class="page-subtitle">Harvest Simulator · Soy · Mato Grosso</div>',
+        f'<div class="page-subtitle">{t("home_sub", lang)}</div>',
         unsafe_allow_html=True,
     )
     st.markdown("<br>", unsafe_allow_html=True)
 
     # ── Hero ──────────────────────────────────────────────────────────────
-    st.markdown("""
+    st.markdown(f"""
     <div class="landing-hero" style="position:relative;overflow:hidden">
 
       <!-- Planta de soja DIREITA — principal, grande -->
@@ -135,34 +143,32 @@ def _render_home():
         <ellipse cx="500" cy="180" rx="5" ry="8"  fill="white" transform="rotate(15 500 180)"/>
       </svg>
 
-      <div class="landing-tag">Soy &middot; Mato Grosso</div>
-      <div class="landing-title">Simulate your harvest<br>before deciding</div>
-      <div class="landing-desc">
-          Enter your field conditions and management decisions.
-          The simulator projects expected productivity for each climate scenario
-          and identifies which combination delivers the best expected outcome.
-      </div>
+      <div class="landing-tag">{t("home_tag", lang)}</div>
+      <div class="landing-title">{t("home_title", lang)}</div>
+      <div class="landing-desc">{t("home_desc", lang)}</div>
     </div>
     """, unsafe_allow_html=True)
 
-    if st.button("Start new simulation →", type="primary"):
-        st.session_state.input_step = 1
-        go("input")
+    btn_col, farm_col, _ = st.columns([2, 2, 3])
+    with btn_col:
+        if st.button(t("home_cta", lang), type="primary", use_container_width=True):
+            st.session_state.input_step = 1
+            go("input")
+    with farm_col:
+        _farm_lbl = "🗺️ Meus Talhões" if lang == "pt" else "🗺️ My Fields"
+        if st.button(_farm_lbl, use_container_width=True):
+            go("farm")
 
     st.markdown("<br>", unsafe_allow_html=True)
 
     # ── How it works ───────────────────────────────────────────────────────
-    st.markdown('<div class="section-hdr">How it works</div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="section-hdr">{t("home_how", lang)}</div>', unsafe_allow_html=True)
     c1, c2, c3, c4 = st.columns(4)
     for col, num, title, desc in [
-        (c1, "1", "Field context",
-         "Enter region, soil type, pH, drainage, structural fitness, area and climate forecast."),
-        (c2, "2", "Producer decisions",
-         "Set planting window, cultivar, seed treatment, density, disease management and technology."),
-        (c3, "3", "Review and confirmation",
-         "See a full summary before simulating to make sure everything is correct."),
-        (c4, "4", "Results and recommendations",
-         "Receive ranked recommendations with expected productivity, risk analysis and a downloadable report."),
+        (c1, "1", t("how1_title", lang), t("how1_desc", lang)),
+        (c2, "2", t("how2_title", lang), t("how2_desc", lang)),
+        (c3, "3", t("how3_title", lang), t("how3_desc", lang)),
+        (c4, "4", t("how4_title", lang), t("how4_desc", lang)),
     ]:
         with col:
             st.markdown(f"""
@@ -176,34 +182,32 @@ def _render_home():
     st.markdown("<br>", unsafe_allow_html=True)
 
     # ── Model summary ──────────────────────────────────────────────────────
-    st.markdown('<div class="section-hdr">How the simulator works</div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="section-hdr">{t("home_how_sim", lang)}</div>', unsafe_allow_html=True)
     m1, m2, m3 = st.columns(3)
     with m1:
-        st.markdown("""<div class="metric-card">
-            <div class="mc-label">Regional reference</div>
+        st.markdown(f"""<div class="metric-card">
+            <div class="mc-label">{t("home_ref", lang)}</div>
             <div class="mc-value">60 sc/ha</div>
-            <div class="mc-sub">Average productivity MT · CONAB 2023/24</div>
+            <div class="mc-sub">{t("home_ref_sub", lang)}</div>
         </div>""", unsafe_allow_html=True)
     with m2:
-        st.markdown("""<div class="metric-card">
-            <div class="mc-label">Factors evaluated</div>
-            <div class="mc-value" style="font-size:1.4rem;line-height:1.4">
-                7 + 6
-            </div>
-            <div class="mc-sub">7 field factors + 6 producer decisions</div>
+        st.markdown(f"""<div class="metric-card">
+            <div class="mc-label">{t("home_factors", lang)}</div>
+            <div class="mc-value" style="font-size:1.4rem;line-height:1.4">7 + 6</div>
+            <div class="mc-sub">{t("home_fac_sub", lang)}</div>
         </div>""", unsafe_allow_html=True)
     with m3:
-        st.markdown("""<div class="metric-card">
-            <div class="mc-label">Risk analysis</div>
-            <div class="mc-value">10,000 sim.</div>
-            <div class="mc-sub">90% confidence interval per scenario</div>
+        st.markdown(f"""<div class="metric-card">
+            <div class="mc-label">{t("home_risk", lang)}</div>
+            <div class="mc-value">{t("home_sim_n", lang)}</div>
+            <div class="mc-sub">{t("home_risk_sub", lang)}</div>
         </div>""", unsafe_allow_html=True)
 
     # ── Histórico rápido ───────────────────────────────────────────────────
     history = st.session_state.sim_history
     if history:
         st.markdown("<br>", unsafe_allow_html=True)
-        st.markdown('<div class="section-hdr">Recent simulations</div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="section-hdr">{t("home_recent", lang)}</div>', unsafe_allow_html=True)
         for sim in reversed(history[-3:]):
             ev_val = sim["result"]["criteria"]["bayes_ev"]["value"]
             st.markdown(f"""
@@ -215,19 +219,20 @@ def _render_home():
                 </div>
                 <div class="hist-ev">
                     <div class="hist-ev-val">{ev_val:.1f}</div>
-                    <div class="hist-ev-unit">sc/ha expected</div>
+                    <div class="hist-ev-unit">{t("home_sc_unit", lang)}</div>
                 </div>
             </div>
             """, unsafe_allow_html=True)
         col_h, _ = st.columns([1, 5])
         with col_h:
-            if st.button("View full history →"):
+            if st.button(t("home_hist_btn", lang)):
                 go("history")
 
 
 # ── Sidebar ───────────────────────────────────────────────────────────────────
 with st.sidebar:
     auth = st.session_state.auth
+    lang = st.session_state.lang
 
     # Logo + brand
     st.markdown("""
@@ -249,6 +254,86 @@ with st.sidebar:
     </div>
     """, unsafe_allow_html=True)
 
+    # Language toggle — botões ocultos usados pelo toggle customizado via JS
+    _cl, _cr = st.columns(2)
+    with _cl:
+        if st.button("EN", key="btn_lang_en", use_container_width=True):
+            if lang != "en":
+                st.session_state.lang = "en"
+                st.rerun()
+    with _cr:
+        if st.button("PT", key="btn_lang_pt", use_container_width=True):
+            if lang != "pt":
+                st.session_state.lang = "pt"
+                st.rerun()
+
+    # Toggle visual customizado (flag deslizante)
+    _is_en = "true" if lang == "en" else "false"
+    components.html(f"""
+<style>
+  * {{ box-sizing: border-box; margin: 0; padding: 0; }}
+  body {{ background: transparent; overflow: hidden;
+          font-family: 'Inter', system-ui, sans-serif; }}
+  .wrap {{
+    display: flex; align-items: center; justify-content: center;
+    gap: 10px; height: 44px;
+  }}
+  .lbl {{
+    font-size: 11px; font-weight: 700; letter-spacing: 0.08em;
+    color: rgba(255,255,255,0.28); transition: color .3s; user-select: none;
+  }}
+  .lbl.on {{ color: rgba(255,255,255,0.92); }}
+  .track {{
+    width: 62px; height: 30px;
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.13);
+    border-radius: 99px; position: relative; cursor: pointer;
+    transition: background .3s;
+  }}
+  .track:hover {{ background: rgba(255,255,255,0.12); }}
+  .thumb {{
+    position: absolute; top: 3px;
+    width: 24px; height: 24px; border-radius: 50%;
+    background: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 15px; line-height: 1;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+    transition: left .3s cubic-bezier(.4,0,.2,1);
+  }}
+</style>
+<div class="wrap">
+  <span class="lbl" id="lbl-en">EN</span>
+  <div class="track" id="track">
+    <div class="thumb" id="thumb"></div>
+  </div>
+  <span class="lbl" id="lbl-pt">PT</span>
+</div>
+<script>
+  const isEn0 = {_is_en};
+  const thumb  = document.getElementById('thumb');
+  const lblEn  = document.getElementById('lbl-en');
+  const lblPt  = document.getElementById('lbl-pt');
+
+  function setState(en) {{
+    thumb.style.left  = en ? '3px' : '35px';
+    thumb.textContent = en ? '🇺🇸' : '🇧🇷';
+    lblEn.className = 'lbl' + (en  ? ' on' : '');
+    lblPt.className = 'lbl' + (!en ? ' on' : '');
+  }}
+  setState(isEn0);
+
+  document.getElementById('track').addEventListener('click', () => {{
+    const goEn = thumb.style.left !== '3px';
+    setState(goEn);
+    const doc = window.parent.document;
+    const target = goEn ? 'EN' : 'PT';
+    for (const b of doc.querySelectorAll('[data-testid="stSidebar"] button')) {{
+      if (b.textContent.trim() === target) {{ b.click(); break; }}
+    }}
+  }});
+</script>
+""", height=44)
+
     current = st.session_state.page
 
     def _nav_btn(label: str, key: str, page: str, enabled: bool = True) -> None:
@@ -266,31 +351,37 @@ with st.sidebar:
             go(page)
 
     # Main navigation
-    st.markdown('<div class="nav-section-label">Main</div>', unsafe_allow_html=True)
-    _nav_btn("Home", "home", "home")
-    _nav_btn("New Simulation", "input", "input")
+    st.markdown(f'<div class="nav-section-label">{t("nav_main", lang)}</div>', unsafe_allow_html=True)
+    _nav_btn(t("nav_home", lang),    "home",  "home")
+    _nav_btn(t("nav_new_sim", lang), "input", "input")
+    _nav_btn(t("nav_farm", lang),    "farm",  "farm")
 
     # Analysis
     has_result = st.session_state.sim_result is not None
-    st.markdown('<div class="nav-section-label">Analysis</div>', unsafe_allow_html=True)
-    _nav_btn("Results", "results", "results")
-    _nav_btn("Dashboard", "dashboard", "dashboard", enabled=has_result)
+    st.markdown(f'<div class="nav-section-label">{t("nav_analysis", lang)}</div>', unsafe_allow_html=True)
+    _nav_btn(t("nav_results", lang),   "results",    "results")
+    _nav_btn(t("nav_dashboard", lang), "dashboard",  "dashboard",  enabled=has_result)
+    _nav_btn(t("nav_bi", lang),        "bi_dashboard","bi_dashboard", enabled=has_result)
+
+    # Season Learning
+    st.markdown(f'<div class="nav-section-label">{t("nav_learning", lang)}</div>', unsafe_allow_html=True)
+    _nav_btn(t("nav_adaptive", lang), "adaptive_planner", "adaptive_planner")
 
     # About
-    st.markdown('<div class="nav-section-label">About</div>', unsafe_allow_html=True)
-    _nav_btn("How We Calculate", "explainer", "explainer")
+    st.markdown(f'<div class="nav-section-label">{t("nav_about", lang)}</div>', unsafe_allow_html=True)
+    _nav_btn(t("nav_how", lang), "explainer", "explainer")
 
     # History
-    st.markdown('<div class="nav-section-label">History</div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="nav-section-label">{t("nav_history", lang)}</div>', unsafe_allow_html=True)
     n_hist = len(st.session_state.sim_history)
-    label_hist = f"History ({n_hist})" if n_hist else "History"
+    label_hist = t("nav_hist_n", lang, n=n_hist) if n_hist else t("nav_history", lang)
     _nav_btn(label_hist, "history", "history")
 
     # Active scope
-    st.markdown("""
+    st.markdown(f"""
     <div class="sidebar-scope">
-        <div class="scope-label">Crop</div>
-        <div class="scope-value"><span class="scope-dot"></span>Soy &middot; Mato Grosso</div>
+        <div class="scope-label">{t("crop_label", lang)}</div>
+        <div class="scope-value"><span class="scope-dot"></span>{t("crop_value", lang)}</div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -302,18 +393,81 @@ with st.sidebar:
         <div class="sidebar-user-role">{auth['email']}</div>
     </div>
     """, unsafe_allow_html=True)
-    if st.button("Log out", key="btn_logout", use_container_width=True):
+    if st.button(t("logout", lang), key="btn_logout", use_container_width=True):
         logout()
 
 
 
-# ── Roteador ──────────────────────────────────────────────────────────────────
-from frontend.views import input      as input_view
-from frontend.views import results    as results_view
-from frontend.views import dashboard  as dashboard_view
-from frontend.views import monte_carlo as mc_view
-from frontend.views import history    as history_view
-from frontend.views import explainer  as explainer_view
+# ── Sidebar expand button (JS — mais confiável que CSS puro no Streamlit 1.58) ──
+components.html("""
+<script>
+(function() {
+  const doc = window.parent.document;
+
+  function setup() {
+    if (doc.getElementById('_sb_expand_btn')) return;
+
+    const btn = doc.createElement('button');
+    btn.id = '_sb_expand_btn';
+    btn.setAttribute('aria-label', 'Expand sidebar');
+    btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>';
+    btn.style.cssText = [
+      'position:fixed','top:50%','left:0','transform:translateY(-50%)',
+      'z-index:999999',
+      'background:linear-gradient(180deg,#1a5c38,#0d2b18)',
+      'border:none','border-radius:0 10px 10px 0',
+      'color:rgba(255,255,255,0.92)',
+      'width:28px','height:52px',
+      'display:none','align-items:center','justify-content:center',
+      'cursor:pointer','box-shadow:3px 0 14px rgba(0,0,0,0.3)',
+      'transition:background .2s',
+    ].join(';');
+
+    btn.addEventListener('click', () => {
+      const native =
+        doc.querySelector('[data-testid="collapsedControl"] button') ||
+        doc.querySelector('[data-testid="stSidebarCollapsedControl"] button') ||
+        doc.querySelector('[data-testid="stSidebar"] ~ * button');
+      if (native) native.click();
+    });
+    btn.addEventListener('mouseenter', () => {
+      btn.style.background = 'linear-gradient(180deg,#2d8a56,#1a5c38)';
+    });
+    btn.addEventListener('mouseleave', () => {
+      btn.style.background = 'linear-gradient(180deg,#1a5c38,#0d2b18)';
+    });
+
+    doc.body.appendChild(btn);
+
+    function sync() {
+      const sb = doc.querySelector('[data-testid="stSidebar"]');
+      if (!sb) return;
+      const collapsed = sb.getAttribute('aria-expanded') === 'false';
+      btn.style.display = collapsed ? 'flex' : 'none';
+    }
+
+    new MutationObserver(sync).observe(doc.body, {
+      attributes: true, subtree: true, attributeFilter: ['aria-expanded'],
+    });
+    sync();
+  }
+
+  if (doc.readyState === 'loading') doc.addEventListener('DOMContentLoaded', setup);
+  else setup();
+  setTimeout(setup, 800);
+})();
+</script>
+""", height=0)
+
+# ── Router ────────────────────────────────────────────────────────────────────
+from frontend.views import input              as input_view
+from frontend.views import results            as results_view
+from frontend.views import dashboard          as dashboard_view
+from frontend.views import bi_dashboard       as bi_dashboard_view
+from frontend.views import adaptive_planner   as adaptive_planner_view
+from frontend.views import history            as history_view
+from frontend.views import explainer          as explainer_view
+from frontend.views import plots              as plots_view
 
 page = st.session_state.page
 
@@ -325,11 +479,15 @@ elif page == "results":
     results_view.render()
 elif page == "dashboard":
     dashboard_view.render()
-elif page == "monte_carlo":
-    mc_view.render()
+elif page == "bi_dashboard":
+    bi_dashboard_view.render()
+elif page == "adaptive_planner":
+    adaptive_planner_view.render()
 elif page == "history":
     history_view.render()
 elif page == "explainer":
     explainer_view.render()
+elif page == "farm":
+    plots_view.render()
 else:
     _render_home()

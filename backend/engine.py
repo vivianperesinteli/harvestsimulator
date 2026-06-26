@@ -1,6 +1,6 @@
 """
-Motor de simulação — Decision Tree v7 com termos de interação.
-Modelo: Yield = Baseline + Σ Ajustes_contexto(C1–C7) + Σ Ajustes_decisão(D1–D6) + Ajuste_chuva + Interações
+Simulation engine — Decision Tree v7 with interaction terms.
+Model: Yield = Baseline + Σ Context_adjustments(C1–C7) + Σ Decision_adjustments(D1–D6) + Rain_adjustment + Interactions
 """
 
 from __future__ import annotations
@@ -15,7 +15,7 @@ def _adj(node_dict: dict, key: str, value: str) -> float:
 
 
 def _interaction(key1: str, val1: str, key2: str, val2: str) -> float:
-    """Retorna o ajuste de interação para o par (key1=val1, key2=val2), ou 0."""
+    """Returns the interaction adjustment for the pair (key1=val1, key2=val2), or 0."""
     table = INTERACTIONS.get((key1, key2)) or INTERACTIONS.get((key2, key1))
     if not table:
         return 0.0
@@ -24,15 +24,15 @@ def _interaction(key1: str, val1: str, key2: str, val2: str) -> float:
 
 def compute_simulation(context: dict[str, str], decisions: dict[str, str]) -> dict:
     """
-    Recebe as escolhas do usuário e retorna tudo necessário para exibir
-    resultados, recomendações e análise de upgrade de D2/D3/D6.
+    Receives user choices and returns everything needed to display
+    results, recommendations, and D2/D3/D6 upgrade analysis.
     """
 
-    # ── 1. Base de contexto ────────────────────────────────────────────────
+    # 1. Context base
     context_adj  = sum(_adj(CONTEXT_NODES, k, v) for k, v in context.items())
     context_base = BASELINE + context_adj
 
-    # ── 2. Decisões fixas do usuário (D2, D3, D6) ──────────────────────────
+    # 2. Fixed user decisions (D2, D3, D6)
     d2_val = decisions["d2_cultivar"]
     d3_val = decisions["d3_tsi"]
     d6_val = decisions["d6_tecnologia"]
@@ -44,14 +44,14 @@ def compute_simulation(context: dict[str, str], decisions: dict[str, str]) -> di
     )
     base_effective = context_base + fixed_adj
 
-    # ── 3. Probabilidades de chuva condicionais ao ENSO ───────────────────
+    # 3. ENSO-conditional rain probabilities
     enso_key       = context["c7_enso"]
     rain_probs_map = RAIN_PROBS[enso_key]
     rain_state_names = list(RAIN_STATES.keys())
     rain_probs     = [rain_probs_map[s] for s in rain_state_names]
     rain_adjs      = [RAIN_STATES[s] for s in rain_state_names]
 
-    # ── 4. Matriz de payoff 27 × 3 com interações ─────────────────────────
+    # 4. Payoff matrix 27 × 3 with interaction terms
     d1_items = list(DECISION_NODES["d1_janela"]["options"].items())
     d4_items = list(DECISION_NODES["d4_densidade"]["options"].items())
     d5_items = list(DECISION_NODES["d5_manejo"]["options"].items())
@@ -65,15 +65,15 @@ def compute_simulation(context: dict[str, str], decisions: dict[str, str]) -> di
             for d5_name, d5_adj in d5_items:
                 path_base = base_effective + d1_adj + d4_adj + d5_adj
 
-                # Interação D2 × D5 (cultivar × manejo de doenças)
+                # D2 × D5 interaction (cultivar × disease management)
                 inter_d2_d5 = _interaction("d2_cultivar", d2_val, "d5_manejo", d5_name)
 
-                # Interação D1 × C7 (janela × ENSO) — constante por estado de chuva
+                # D1 × C7 interaction (planting window × ENSO) — constant across rain states
                 inter_d1_enso = _interaction("d1_janela", d1_name, "c7_enso", enso_key)
 
                 row = []
                 for rain_name, r_adj in zip(rain_state_names, rain_adjs):
-                    # Interação C4 × chuva (drenagem × estado da chuva)
+                    # C4 × rain state interaction (drainage × rain)
                     inter_drain = _interaction("c4_drenagem", drain_val, "rain_state", rain_name)
 
                     payoff = round(
@@ -94,10 +94,10 @@ def compute_simulation(context: dict[str, str], decisions: dict[str, str]) -> di
                     "interactions": round(inter_d2_d5 + inter_d1_enso, 2),
                 })
 
-    # ── 5. Critérios de decisão sobre os 27 paths ─────────────────────────
+    # 5. Decision criteria across all 27 paths
     criteria = _compute_criteria(matrix, rain_probs)
 
-    # ── 6. Seleção do usuário ─────────────────────────────────────────────
+    # 6. User's selection
     user_d1 = decisions["d1_janela"]
     user_d4 = decisions["d4_densidade"]
     user_d5 = decisions["d5_manejo"]
@@ -120,13 +120,13 @@ def compute_simulation(context: dict[str, str], decisions: dict[str, str]) -> di
     ]
     user_ev = round(sum(y * p for y, p in zip(user_yields, rain_probs)), 2)
 
-    # ── 7. Potencial de upgrade D2/D3/D6 ──────────────────────────────────
+    # 7. D2/D3/D6 upgrade potential
     upgrade_potential = _compute_upgrade_potential(
         context, decisions, context_base, rain_probs, rain_adjs,
         rain_state_names, drain_val, enso_key,
     )
 
-    # ── 8. Monte Carlo integrado ──────────────────────────────────────────
+    # 8. Integrated Monte Carlo
     mc_stats = run_for_all_paths(
         context_base=context_base,
         paths=paths,
@@ -164,12 +164,12 @@ def _compute_upgrade_potential(
     drain_val, enso_key,
 ) -> dict:
     """
-    Para cada decisão de D2, D3, D6, calcula o ganho médio esperado
-    de trocar a opção atual pela melhor disponível.
-    Usa o path ótimo (bayes_ev) das demais decisões como referência.
+    For each of D2, D3, D6, computes the expected gain of switching from the
+    current option to each available alternative.
+    Uses the Bayes-EV optimal D1/D4/D5 path as the reference.
     """
 
-    # Encontra o path ótimo de D1/D4/D5 usando NumPy — vetorizado sobre as 27 combinações
+    # Find optimal D1/D4/D5 path using NumPy — vectorised over all 27 combinations
     combos = list(_product(
         DECISION_NODES["d1_janela"]["options"].items(),
         DECISION_NODES["d4_densidade"]["options"].items(),
@@ -212,7 +212,7 @@ def _compute_upgrade_potential(
     cur_d6 = decisions["d6_tecnologia"]
     current_ev = _ev_for_d2d3d6(cur_d2, cur_d3, cur_d6)
 
-    # Opções ordenadas da melhor para a pior em cada nó
+    # Options sorted best to worst for each node
     d2_options = list(DECISION_NODES["d2_cultivar"]["options"].keys())
     d3_options = list(DECISION_NODES["d3_tsi"]["options"].keys())
     d6_options = list(DECISION_NODES["d6_tecnologia"]["options"].keys())

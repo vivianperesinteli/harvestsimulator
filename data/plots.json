@@ -1,0 +1,181 @@
+[
+  {
+    "id": "b76323c8-e46a-4c33-b9c1-2436e1e1d10e",
+    "user_id": "demo@bayer.com",
+    "nome": "Talhão Norte",
+    "area_ha": 320.0,
+    "created_at": "2024-01-10T08:00:00.000000",
+    "context": {
+      "c1_regiao": "Favorável (Sorriso, Sinop, Lucas RV)",
+      "c2_textura": "Favorável (argilosa / média bem estruturada)",
+      "c3_ph": "Adequado (5,5 – 6,5)",
+      "c4_drenagem": "Boa (bem drenado)",
+      "c5_aptidao": "Alta (Latossolo, Nitossolo)",
+      "c6_area": "Grande (>200 ha)"
+    },
+    "simulations": [
+      {
+        "id": 1,
+        "timestamp": "2024-03-14T09:15:00.000000",
+        "c7_enso": "El Niño (chuva regular em MT)",
+        "decisions": {
+          "d1_janela": "Ótima (16/out – 10/nov)",
+          "d2_cultivar": "Alto potencial (P98R30, NK6727, BMX Foco; pós-2020)",
+          "d3_tsi": "Premium (fung+inset+nemat+inoc)",
+          "d4_densidade": "Média (280k–340k)",
+          "d5_manejo": "Alto (≥3 fung. + monitor ferrugem)",
+          "d6_tecnologia": "Alta precisão (RTK + pneumática moderna)"
+        },
+        "risk_profile": "balanced",
+        "ev_simulated": 71.4,
+        "yield_real": 69.8
+      },
+      {
+        "id": 2,
+        "timestamp": "2025-03-20T10:30:00.000000",
+        "c7_enso": "La Niña (chuva concentrada/curta)",
+        "decisions": {
+          "d1_janela": "Ótima (16/out – 10/nov)",
+          "d2_cultivar": "Alto potencial (P98R30, NK6727, BMX Foco; pós-2020)",
+          "d3_tsi": "Premium (fung+inset+nemat+inoc)",
+          "d4_densidade": "Média (280k–340k)",
+          "d5_manejo": "Alto (≥3 fung. + monitor ferrugem)",
+          "d6_tecnologia": "Alta precisão (RTK + pneumática moderna)"
+        },
+        "risk_profile": "conservative",
+        "ev_simulated": 62.9,
+        "yield_real": 61.2
+      },
+      {
+        "id": 3,
+        "timestamp": "2026-03-18T11:00:00.000000",
+        "c7_enso": "Neutro",
+        "decisions": {
+          "d1_janela": "Ótima (16/out – 10/nov)",
+          "d2_cultivar": "Alto potencial (P98R30, NK6727, BMX Foco; pós-2020)",
+          "d3_tsi": "Premium (fung+inset+nemat+inoc)",
+          "d4_densidade": "Média (280k–340k)",
+          "d5_manejo": "Alto (≥3 fung. + monitor ferrugem)",
+          "d6_tecnologia": "Alta precisão (RTK + pneumática moderna)"
+        },
+        "risk_profile": "balanced",
+        "ev_simulated": 68.2,
+        "yield_real": null
+      }
+    ]
+  },
+  {
+    "id": "c92d4f17-3b8a-4e21-b5c7-7d81f3a09e55",
+    "user_id": "demo@bayer.com",
+    "nome": "Talhão Sul",
+    "area_ha": 185.0,
+    "created_at": "2024-01-10T08:30:00.000000",
+    "context": {
+      "c1_regiao": "Intermediária (Sapezal, Campo Novo)",
+      "c2_textura": "Intermediária (textura média)",
+      "c3_ph": "Limítrofe (5,0–5,4 ou 6,6–6,8)",
+      "c4_drenagem": "Moderada (moderadamente/imperfeito)",
+      "c5_aptidao": "Média (Argissolo, Cambissolo)",
+      "c6_area": "Média (50–200 ha)"
+    },
+    "simulations": [
+      {
+        "id": 1,
+        "timestamp": "2025-03-22T14:00:00.000000",
+        "c7_enso": "Neutro",
+        "decisions": {
+          "d1_janela": "Ótima (16/out – 10/nov)",
+          "d2_cultivar": "Intermediário (2015–2019)",
+          "d3_tsi": "Standard (fungicida + inoculante)",
+          "d4_densidade": "Média (280k–340k)",
+          "d5_manejo": "Padrão (2 aplicações)",
+          "d6_tecnologia": "Padrão"
+        },
+        "risk_profile": "balanced",
+        "ev_simulated": 58.6,
+        "yield_real": 57.3
+      },
+      {
+        "id": 2,
+        "timestamp": "2026-03-19T09:45:00.000000",
+        "c7_enso": "La Niña (chuva concentrada/curta)",
+        "decisions": {
+          "d1_janela": "Ótima (16/out – 10/nov)",
+          "d2_cultivar": "Alto potencial (P98R30, NK6727, BMX Foco; pós-2020)",
+          "d3_tsi": "Premium (fung+inset+nemat+inoc)",
+          "d4_densidade": "Média (280k–340k)",
+          "d5_manejo": "Alto (≥3 fung. + monitor ferrugem)",
+          "d6_tecnologia": "Padrão"
+        },
+        "risk_profile": "conservative",
+        "ev_simulated": 55.3,
+        "yield_real": null
+      },
+      {
+        "id": 3,
+        "timestamp": "2026-06-26T15:25:44.572569",
+        "c7_enso": "El Niño (chuva regular em MT)",
+        "decisions": {
+          "d1_janela": "Ótima (16/out – 10/nov)",
+          "d2_cultivar": "Intermediário (2015–2019)",
+          "d3_tsi": "Premium (fung+inset+nemat+inoc)",
+          "d4_densidade": "Média (280k–340k)",
+          "d5_manejo": "Padrão (2 aplicações)",
+          "d6_tecnologia": "Alta precisão (RTK + pneumática moderna)"
+        },
+        "risk_profile": "aggressive",
+        "ev_simulated": 72.55,
+        "yield_real": null
+      }
+    ]
+  },
+  {
+    "id": "a14e7c92-8d3f-4b2a-9e61-2f50c7b84d31",
+    "user_id": "demo@bayer.com",
+    "nome": "Área Cerrado",
+    "area_ha": 450.0,
+    "created_at": "2024-02-05T09:00:00.000000",
+    "context": {
+      "c1_regiao": "Desafiadora (Primavera Leste, Querência)",
+      "c2_textura": "Desafiadora (arenosa / baixa retenção)",
+      "c3_ph": "Crítico (<5,0 ou >6,8)",
+      "c4_drenagem": "Ruim (mal / excessivamente drenado)",
+      "c5_aptidao": "Baixa (Neossolo, Gleissolo)",
+      "c6_area": "Grande (>200 ha)"
+    },
+    "simulations": [
+      {
+        "id": 1,
+        "timestamp": "2025-04-01T08:00:00.000000",
+        "c7_enso": "El Niño (chuva regular em MT)",
+        "decisions": {
+          "d1_janela": "Ótima (16/out – 10/nov)",
+          "d2_cultivar": "Alto potencial (P98R30, NK6727, BMX Foco; pós-2020)",
+          "d3_tsi": "Premium (fung+inset+nemat+inoc)",
+          "d4_densidade": "Média (280k–340k)",
+          "d5_manejo": "Alto (≥3 fung. + monitor ferrugem)",
+          "d6_tecnologia": "Alta precisão (RTK + pneumática moderna)"
+        },
+        "risk_profile": "aggressive",
+        "ev_simulated": 49.1,
+        "yield_real": 47.6
+      },
+      {
+        "id": 2,
+        "timestamp": "2026-04-03T10:15:00.000000",
+        "c7_enso": "Neutro",
+        "decisions": {
+          "d1_janela": "Ótima (16/out – 10/nov)",
+          "d2_cultivar": "Alto potencial (P98R30, NK6727, BMX Foco; pós-2020)",
+          "d3_tsi": "Premium (fung+inset+nemat+inoc)",
+          "d4_densidade": "Média (280k–340k)",
+          "d5_manejo": "Alto (≥3 fung. + monitor ferrugem)",
+          "d6_tecnologia": "Alta precisão (RTK + pneumática moderna)"
+        },
+        "risk_profile": "aggressive",
+        "ev_simulated": 52.7,
+        "yield_real": null
+      }
+    ]
+  }
+]

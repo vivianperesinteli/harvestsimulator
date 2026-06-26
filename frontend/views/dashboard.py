@@ -1,4 +1,4 @@
-"""Dashboard — decomposição visual do yield simulado."""
+"""Dashboard — visual decomposition of simulated yield."""
 
 from __future__ import annotations
 import streamlit as st
@@ -6,6 +6,7 @@ import plotly.graph_objects as go
 import plotly.express as px
 import pandas as pd
 from frontend.navigation import go as navigate
+from frontend.i18n import t
 
 # Mapeamentos de labels curtos
 _C_LABELS = {
@@ -47,13 +48,14 @@ _D_OPTIONS = {
 
 
 def render() -> None:
+    lang      = st.session_state.get("lang", "en")
     result    = st.session_state.get("sim_result")
     context   = st.session_state.get("sim_context")
     decisions = st.session_state.get("sim_decisions")
 
     if not result or not context or not decisions:
-        st.warning("Run a simulation first.")
-        if st.button("← Go to Simulation"):
+        st.warning(t("dash_no_result", lang))
+        if st.button(t("dash_go_sim", lang)):
             navigate("input")
         return
 
@@ -65,8 +67,15 @@ def render() -> None:
         for adj, p in zip([-8.0, 2.0, 4.0], rain_probs)
     )
 
-    st.markdown('<div class="page-title">Dashboard</div>', unsafe_allow_html=True)
-    st.markdown('<div class="page-subtitle">Visual decomposition of simulated yield</div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="page-title">{t("dash_page_title", lang)}</div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="page-subtitle">{t("dash_page_subtitle", lang)}</div>', unsafe_allow_html=True)
+    st.markdown(
+        f'<div style="background:rgba(21,101,192,0.06);border-left:3px solid #1565c0;'
+        f'border-radius:0 8px 8px 0;padding:10px 16px;margin:10px 0 6px 0;'
+        f'font-size:0.81rem;color:#1a1a2e;line-height:1.5">'
+        f'{t("dash_purpose", lang)}</div>',
+        unsafe_allow_html=True,
+    )
     st.markdown("<br>", unsafe_allow_html=True)
 
     # ── Cards de resumo ───────────────────────────────────────────────────
@@ -80,14 +89,16 @@ def render() -> None:
     ev_final      = user_sel["ev"]
 
     m1, m2, m3, m4, m5 = st.columns(5)
-    for col, label, value, sub in [
-        (m1, "Baseline",         baseline,                    "sc/ha"),
-        (m2, "Context Adj.",     context_adj,                 "sc/ha (C1–C7)"),
-        (m3, "Decision Adj.",    fixed_adj + variable_adj,    "sc/ha (D1–D6)"),
-        (m4, "Rain EV",          round(ev_chuva, 2),          "expected sc/ha"),
-        (m5, "Final EV",         ev_final,                    "sc/ha"),
+    for col, label_key, sub_key, value in [
+        (m1, "dash_m_baseline", "dash_m_sub_baseline", baseline),
+        (m2, "dash_m_context",  "dash_m_sub_context",  context_adj),
+        (m3, "dash_m_decision", "dash_m_sub_decision",  fixed_adj + variable_adj),
+        (m4, "dash_m_rain",     "dash_m_sub_rain",      round(ev_chuva, 2)),
+        (m5, "dash_m_final",    "dash_m_sub_final",     ev_final),
     ]:
-        is_delta = label not in ("Baseline", "EV Final")
+        label = t(label_key, lang)
+        sub   = t(sub_key, lang)
+        is_delta = label_key not in ("dash_m_baseline", "dash_m_final")
         color = "#2e7d32" if value > 0 else ("#c62828" if value < 0 else "#111")
         val_str = f"{value:+.1f}" if is_delta else f"{value:.1f}"
         val_color = color if is_delta else "#111"
@@ -101,13 +112,13 @@ def render() -> None:
     st.markdown("<br>", unsafe_allow_html=True)
 
     # ── Waterfall ─────────────────────────────────────────────────────────
-    st.markdown("### Yield Decomposition — Waterfall")
-    st.caption("Each bar shows the contribution of a node to the cumulative yield.")
+    st.markdown(t("dash_waterfall_title", lang))
+    st.caption(t("dash_waterfall_caption", lang))
 
     labels, measures, values, colors_wf, texts = [], [], [], [], []
 
     # Baseline
-    labels.append("Baseline"); measures.append("absolute"); values.append(baseline)
+    labels.append(t("dash_wf_baseline", lang)); measures.append("absolute"); values.append(baseline)
     colors_wf.append("#455a64"); texts.append(f"{baseline:.0f}")
 
     # C1–C7
@@ -132,12 +143,12 @@ def render() -> None:
         texts.append(f"{adj:+.0f}")
 
     # Rain EV
-    labels.append("Rain EV"); measures.append("relative"); values.append(round(ev_chuva, 2))
+    labels.append(t("dash_wf_rain", lang)); measures.append("relative"); values.append(round(ev_chuva, 2))
     colors_wf.append("#f57c00" if ev_chuva >= 0 else "#c62828")
     texts.append(f"{ev_chuva:+.1f}")
 
     # Total
-    labels.append("Final EV"); measures.append("total"); values.append(ev_final)
+    labels.append(t("dash_wf_final", lang)); measures.append("total"); values.append(ev_final)
     colors_wf.append("#111111"); texts.append(f"{ev_final:.1f}")
 
     fig_wf = go.Figure(go.Waterfall(
@@ -172,8 +183,8 @@ def render() -> None:
 
     # ── Radar — Perfil de Contexto ────────────────────────────────────────
     with col_left:
-        st.markdown("### Context Profile (C1–C7)")
-        st.caption("Each node's adjustment normalized between −1 and +1 relative to its range.")
+        st.markdown(t("dash_radar_title", lang))
+        st.caption(t("dash_radar_caption", lang))
 
         _C_RANGES = {
             "c1_regiao": (-6, 5), "c2_textura": (-7, 5), "c3_ph": (-6, 4),
@@ -203,7 +214,7 @@ def render() -> None:
         fig_radar.update_layout(
             polar=dict(
                 radialaxis=dict(visible=True, range=[0, 1], tickvals=[0, 0.5, 1],
-                                ticktext=["Min", "Mid", "Max"],
+                                ticktext=[t("dash_radar_min", lang), t("dash_radar_mid", lang), t("dash_radar_max", lang)],
                                 tickfont=dict(color="#1a1a2e", size=10),
                                 gridcolor="#c8c0b0", linecolor="#c8c0b0"),
                 angularaxis=dict(linecolor="#c8c0b0", gridcolor="#c8c0b0",
@@ -220,8 +231,8 @@ def render() -> None:
 
     # ── Yield por cenário de chuva ────────────────────────────────────────
     with col_right:
-        st.markdown("### Yield by Rain Scenario")
-        st.caption("Your selection vs best path (Bayes EV) across the 3 rain states.")
+        st.markdown(t("dash_bar_title", lang))
+        st.caption(t("dash_bar_caption", lang))
 
         optimal_idx   = result["criteria"]["bayes_ev"]["path_idx"]
         optimal_path  = result["paths"][optimal_idx]
@@ -231,7 +242,7 @@ def render() -> None:
 
         fig_bar = go.Figure()
         fig_bar.add_trace(go.Bar(
-            name="Your selection",
+            name=t("dash_bar_your", lang),
             x=rain_short,
             y=user_sel["yields"],
             marker_color="#1565c0",
@@ -239,7 +250,7 @@ def render() -> None:
             textposition="outside",
         ))
         fig_bar.add_trace(go.Bar(
-            name="Best path (EV)",
+            name=t("dash_bar_best", lang),
             x=rain_short,
             y=optimal_yields,
             marker_color="#2e7d32",
@@ -263,35 +274,46 @@ def render() -> None:
         st.plotly_chart(fig_bar, use_container_width=True)
 
     # ── Sensibilidade — ranking de impacto ────────────────────────────────
-    st.markdown("### Sensitivity — Impact of Each Node")
-    st.caption("Absolute value of each node's adjustment in the current simulation. The larger, the more that node influences yield.")
+    st.markdown(t("dash_sens_title", lang))
+    st.caption(t("dash_sens_caption", lang))
 
     sens_rows = []
     for key, label in {**_C_LABELS, **_D_LABELS}.items():
         opts = _C_OPTIONS.get(key) or _D_OPTIONS.get(key, {})
         val  = context.get(key) or decisions.get(key, "")
         adj  = opts.get(val, 0)
-        tipo = "Context" if key.startswith("c") else "Decision"
-        sens_rows.append({"Node": label, "Adjustment (sc/ha)": adj, "Absolute impact": abs(adj), "Type": tipo})
+        tipo = t("dash_sens_type_ctx", lang) if key.startswith("c") else t("dash_sens_type_dec", lang)
+        sens_rows.append({
+            t("dash_sens_col_node", lang): label,
+            t("dash_sens_col_adj", lang):  adj,
+            t("dash_sens_col_abs", lang):  abs(adj),
+            t("dash_sens_col_type", lang): tipo,
+        })
 
-    df_sens = pd.DataFrame(sens_rows).sort_values("Absolute impact", ascending=True)
+    _abs_col  = t("dash_sens_col_abs", lang)
+    _adj_col  = t("dash_sens_col_adj", lang)
+    _node_col = t("dash_sens_col_node", lang)
+    _type_col = t("dash_sens_col_type", lang)
+    _ctx_val  = t("dash_sens_type_ctx", lang)
+
+    df_sens = pd.DataFrame(sens_rows).sort_values(_abs_col, ascending=True)
 
     fig_sens = go.Figure(go.Bar(
-        x=df_sens["Adjustment (sc/ha)"],
-        y=df_sens["Node"],
+        x=df_sens[_adj_col],
+        y=df_sens[_node_col],
         orientation="h",
         marker_color=[
-            "#1565c0" if t == "Context" else "#2e7d32"
+            "#1565c0" if tp == _ctx_val else "#2e7d32"
             if v >= 0 else "#c62828"
-            for t, v in zip(df_sens["Type"], df_sens["Adjustment (sc/ha)"])
+            for tp, v in zip(df_sens[_type_col], df_sens[_adj_col])
         ],
-        text=[f"{v:+.0f}" for v in df_sens["Adjustment (sc/ha)"]],
+        text=[f"{v:+.0f}" for v in df_sens[_adj_col]],
         textposition="outside",
     ))
     fig_sens.add_vline(x=0, line_color="#999", line_width=1)
     fig_sens.update_layout(
         height=420,
-        xaxis_title="Adjustment (sc/ha)",
+        xaxis_title=t("dash_sens_col_adj", lang),
         margin=dict(t=10, l=20, r=60, b=20),
         plot_bgcolor="rgba(0,0,0,0)",
         paper_bgcolor="rgba(0,0,0,0)",
@@ -302,4 +324,11 @@ def render() -> None:
         showlegend=False,
     )
     st.plotly_chart(fig_sens, use_container_width=True)
-    st.caption("Blue = context node  ·  Green/Red = decision node")
+    st.caption(t("dash_sens_caption2", lang))
+
+    # ── Cross-navigation ──────────────────────────────────────────────────────
+    st.markdown("<br>", unsafe_allow_html=True)
+    _, col_bi = st.columns([4, 1])
+    with col_bi:
+        if st.button(t("dash_goto_bi", lang), use_container_width=True):
+            navigate("bi_dashboard")

@@ -1,14 +1,14 @@
 """
-Todos os dados do modelo Decision Tree v7 (Baseline-Adjusted).
-Fonte: Decision_Tree_v7_Baseline_Adjusted.xlsx — aba "Baseline & Nós".
-Escopo: Soja Verão MT · Baseline = 60 sc/ha.
+All model data for Decision Tree v7 (Baseline-Adjusted).
+Source: Decision_Tree_v7_Baseline_Adjusted.xlsx — sheet "Baseline & Nós".
+Scope: Summer Soybean MT · Baseline = 60 sc/ha.
 """
 
 BASELINE: float = 60.0  # sc/ha — CONAB Jan/2024, MT 2023/24
 
-# ── Nós de Contexto (C1–C7) ────────────────────────────────────────────────
-# Não controláveis pelo produtor — refletem características do campo/safra.
-# Valor: ajuste aditivo em sc/ha sobre o baseline.
+# ── Context Nodes (C1–C7) ──────────────────────────────────────────────────
+# Not controllable by the producer — reflect field/season characteristics.
+# Value: additive adjustment in sc/ha over the baseline.
 
 CONTEXT_NODES: dict = {
     "c1_regiao": {
@@ -69,8 +69,8 @@ CONTEXT_NODES: dict = {
     },
 }
 
-# ── Nós de Decisão (D1–D6) ─────────────────────────────────────────────────
-# Controláveis pelo produtor. Valor: ajuste aditivo em sc/ha.
+# ── Decision Nodes (D1–D6) ────────────────────────────────────────────────
+# Controllable by the producer. Value: additive adjustment in sc/ha.
 
 DECISION_NODES: dict = {
     "d1_janela": {
@@ -123,9 +123,9 @@ DECISION_NODES: dict = {
     },
 }
 
-# ── Nó Chance — Estado da Natureza (Chuva R3–R6) ───────────────────────────
-# Revelado ex-post. Ajuste aditivo em sc/ha.
-# Fonte: INMET Sorriso/Sinop 2010–2024 + dataset rainfall_sum_R3_R6.
+# ── Chance Node — State of Nature (Rainfall R3–R6) ────────────────────────
+# Revealed ex-post. Additive adjustment in sc/ha.
+# Source: INMET Sorriso/Sinop 2010–2024 + dataset rainfall_sum_R3_R6.
 
 RAIN_STATES: dict[str, float] = {
     "Seca (<150 mm)": -8.0,
@@ -142,21 +142,21 @@ RAIN_PROBS: dict[str, dict[str, float]] = {
     "La Niña (chuva concentrada/curta)":  {"Seca (<150 mm)": 0.50, "Normal (150–250 mm)": 0.30, "Úmida (>250 mm)": 0.20},
 }
 
-# ── Termos de interação ────────────────────────────────────────────────────────
-# Ajustes adicionais (sc/ha) quando duas variáveis ocorrem juntas.
-# Captura efeitos que o modelo aditivo simples não representa.
+# ── Interaction Terms ─────────────────────────────────────────────────────────
+# Additional adjustments (sc/ha) when two variables co-occur.
+# Captures effects that the simple additive model cannot represent.
 #
-# Interação 1 — Cultivar × Manejo de Doenças (D2 × D5)
-#   Alto potencial precisa de manejo para entregar o potencial genético.
-#   Com manejo ruim, a alta susceptibilidade vira passivo.
+# Interaction 1 — Cultivar × Disease Management (D2 × D5)
+#   High-potential cultivar needs management to deliver genetic potential.
+#   With poor management, high susceptibility becomes a liability.
 #
-# Interação 2 — Drenagem × Estado da Chuva (C4 × Rain)
-#   Encharcamento só é crítico quando chove muito.
-#   Em seca, drenagem ruim praticamente não penaliza.
+# Interaction 2 — Drainage × Rain State (C4 × Rain)
+#   Waterlogging is only critical during heavy rainfall.
+#   In drought conditions, poor drainage has little additional penalty.
 #
-# Interação 3 — Janela de Plantio × ENSO (D1 × C7)
-#   Tardio em La Niña é a combinação mais arriscada:
-#   enchimento de grão cai no pico de veranico.
+# Interaction 3 — Planting Window × ENSO (D1 × C7)
+#   Late planting in La Niña is the riskiest combination:
+#   grain fill falls at the peak drought window.
 
 INTERACTIONS: dict = {
     # Cultivar × Manejo (D2 × D5)

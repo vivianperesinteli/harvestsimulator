@@ -2,7 +2,7 @@
 
 **Bayer CropScience × Inteli · Module 6 · Group 2**
 
-Web-based agricultural decision support tool for soybean producers in Mato Grosso. The producer enters field conditions and management decisions; the simulator calculates expected yield for each climate scenario, applies 6 economic decision criteria, and estimates the confidence interval via Monte Carlo simulation.
+Web-based agricultural decision support tool for soybean producers in Mato Grosso. The producer enters field conditions and management decisions; the simulator calculates expected yield for each climate scenario, applies 6 economic decision criteria, and estimates the confidence interval via Monte Carlo simulation. v3 adds a BI Intelligence Dashboard with regional benchmarks and variable health monitoring, plus an Adaptive Season Planner that learns from confirmed actual yields to improve model calibration over time.
 
 ---
 
@@ -19,17 +19,42 @@ Login with: **Username:** `demo` · **Password:** `demo123`
 
 ## Features
 
+### Simulation core
 | Feature | Description |
 |---|---|
 | Payoff Matrix | 27 management combinations × 3 climate scenarios (sc/ha) |
 | 6 Decision Criteria | Bayes EV, Wald, Laplace, Hurwicz, Maximax, Savage |
-| Monte Carlo | 1,000–10,000 iterations, configurable triangular distributions |
+| Interaction Effects | 3 modelled interactions: D2×D5, C4×Rain, D1×ENSO |
+| Monte Carlo | 2,000 iterations by default, configurable triangular distributions |
 | Risk Analysis | P(yield < threshold), P5/P95, standard deviation |
-| Tornado Chart | Spearman correlation per stochastic variable |
-| Alternative Comparison | Your selection vs. optimal path (Bayes EV) |
+| Tornado Chart | Pearson correlation + variance share per stochastic variable |
+| Alternative Comparison | Your selection vs. optimal path (Bayes EV) — distributions side by side |
 | Upgrade Potential | Impact of switching cultivar, seed treatment, or planter |
 | Export | PDF (full report) + CSV per recommendation |
 | Interactive Explainer | 10-step methodology with formulas and charts |
+
+### BI Intelligence Dashboard *(v3)*
+| Feature | Description |
+|---|---|
+| Regional Benchmark | Your simulated EV vs. IMEA 2023/24 regional productivity reference |
+| ENSO Risk Index | Drought probability index (0–100%) derived from NOAA/CPC conditional probabilities |
+| Decision Quality Score | 0–100 score: how many of D1–D6 are in their optimal zone |
+| Historical Benchmark | Your simulation plotted against CONAB/IMEA MT yields 2018–2024 |
+| Variable Health Monitor | Traffic-light status (🟢🟡🔴) for all 13 model nodes in real time |
+| Agronomic Vulnerability Score | Composite risk exposure index across all context + decision nodes |
+| Active Alerts | Automatic detection of critical combinations (e.g., Late Planting + La Niña → −10.5 sc/ha drag) |
+| Risk–Return Map | Scatter of all 27 paths: expected yield (EV) vs. worst case (Wald) |
+| Season Calendar | Gantt timeline of the MT soy season with your planting window highlighted |
+| Data Pipeline | End-to-end documentation of inputs → processing → outputs |
+
+### Adaptive Season Planner *(v3 — going beyond)*
+| Feature | Description |
+|---|---|
+| Outcome Confirmation | Record actual harvest yield linked to a past simulation |
+| Learning Curve | Season-by-season chart of simulated vs. actual, with gap trend |
+| Bayesian Calibration | After ≥3 confirmed seasons, triangular distribution modes auto-adjust to your farm's historical pattern |
+| What-if Explorer | Override any D1–D6 decision in real time and see the expected yield impact instantly |
+| Audit Trail | All confirmed outcomes persisted in `data/outcomes.json` per user |
 
 ---
 
@@ -104,6 +129,7 @@ simulator/
 │   ├── main.py          # FastAPI — endpoints /health, /api/nodes, /api/simulate, /api/monte_carlo
 │   ├── engine.py        # Compute simulation: payoff matrix, criteria, upgrade potential
 │   ├── monte_carlo.py   # MC engine: triangular distributions + tornado chart
+│   ├── learning.py      # [v3] Bayesian calibration + outcome persistence
 │   ├── models.py        # Pydantic models for request/response
 │   └── data.py          # Constants: nodes, adjustments, rainfall probabilities
 ├── frontend/
@@ -113,16 +139,19 @@ simulator/
 │   ├── styles.py        # Global CSS (visual identity)
 │   ├── navigation.py    # Page router via session_state
 │   └── views/
-│       ├── input.py         # 3 steps: context → decisions → review
-│       ├── results.py       # Recommendations, matrix, criteria, PDF/CSV export
+│       ├── input.py            # 3 steps: context → decisions → review
+│       ├── results.py          # Recommendations, matrix, criteria, PDF/CSV export
 │       ├── results_helpers.py  # Shared labels and text
 │       ├── results_pdf.py      # PDF generator (fpdf2)
-│       ├── dashboard.py     # Charts: waterfall, radar, bar, sensitivity
-│       ├── monte_carlo.py   # Monte Carlo UI with histogram and tornado
-│       ├── explainer.py     # Interactive explainer — 10 steps
-│       └── history.py       # Session simulation history
+│       ├── dashboard.py        # Charts: waterfall, radar, bar, sensitivity
+│       ├── monte_carlo.py      # Monte Carlo UI with histogram and tornado
+│       ├── bi_dashboard.py     # [v3] BI Intelligence Dashboard
+│       ├── adaptive_planner.py # [v3] Adaptive Season Planner + What-if Explorer
+│       ├── explainer.py        # Interactive explainer — 10 steps
+│       └── history.py          # Session simulation history
 ├── data/
-│   └── users.json       # Users (auto-generated)
+│   ├── users.json        # Users (auto-generated)
+│   └── outcomes.json     # [v3] Confirmed harvest outcomes per user
 ├── tests/
 │   └── test_monte_carlo.py
 ├── requirements.txt
@@ -161,6 +190,16 @@ simulator/
 - **Expected yield:** probability-weighted average across climate scenarios (Bayes EV)
 - **90% interval:** between P5 and P95 of the Monte Carlo simulations
 - **Risk:** probability of falling below the configurable threshold (default: regional reference)
+
+---
+
+## Version history
+
+| Version | Highlights |
+|---|---|
+| v1 | Payoff matrix, 6 decision criteria, basic Monte Carlo |
+| v2 | Dashboard (waterfall, radar, sensitivity), PDF/CSV export, interactive explainer, session history, PBKDF2 auth |
+| v3 | BI Intelligence Dashboard (regional benchmarks, variable health monitor, ENSO risk, alerts), Adaptive Season Planner (outcome confirmation, Bayesian calibration, What-if Explorer), triangular distribution source traceability, N_ITER constant, full English translation |
 
 ---
 

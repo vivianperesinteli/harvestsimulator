@@ -1100,18 +1100,26 @@ div[data-baseweb="notification"] span {
   border: 1px solid var(--gray-200);
   border-radius: var(--radius-lg);
   padding: 24px 28px;
-  margin-bottom: 16px;
+  margin-bottom: 20px;
   box-shadow: var(--shadow-sm);
-  transition: box-shadow 0.2s ease;
+  transition: box-shadow 0.2s ease, transform 0.15s ease;
 }
-.rec-card-v2:hover { box-shadow: var(--shadow-md); }
+.rec-card-v2:hover { box-shadow: var(--shadow-md); transform: translateY(-1px); }
 .rec-card-v2.rank-1 {
-  border: 2px solid var(--green-500);
-  border-top: 4px solid var(--green-300);
-  box-shadow: 0 4px 24px rgba(13,43,24,0.1), 0 0 0 4px rgba(118,196,66,0.1);
+  border: 1.5px solid rgba(45,138,86,0.4);
+  border-top: 5px solid var(--green-500);
+  background: linear-gradient(180deg, rgba(118,196,66,0.04) 0%, #ffffff 60px);
+  box-shadow: 0 6px 32px rgba(13,43,24,0.12), 0 1px 4px rgba(0,0,0,0.05);
 }
-.rec-card-v2.rank-2 { border-left: 4px solid var(--amber-500); }
-.rec-card-v2.rank-3 { border-left: 4px solid var(--gray-200); }
+.rec-card-v2.rank-1:hover { box-shadow: 0 10px 40px rgba(13,43,24,0.18); }
+.rec-card-v2.rank-2 {
+  border-left: 4px solid var(--amber-500);
+  opacity: 0.95;
+}
+.rec-card-v2.rank-3 {
+  border-left: 4px solid var(--gray-300);
+  opacity: 0.88;
+}
 
 .rec-rank-badge {
   display: inline-flex;
@@ -1119,37 +1127,48 @@ div[data-baseweb="notification"] span {
   gap: 6px;
   background: var(--green-700);
   color: #ffffff;
-  padding: 3px 12px;
+  padding: 4px 14px;
   border-radius: 20px;
   font-size: 0.72rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
+}
+.rec-rank-badge.rank-1 {
+  background: linear-gradient(135deg, #1a5c38 0%, #2d8a56 100%);
+  padding: 5px 16px;
+  font-size: 0.78rem;
 }
 /* amber claro → texto escuro para garantir contraste 4.5:1+ */
 .rec-rank-badge.rank-2 { background: var(--amber-dark); color: #ffffff; }
 .rec-rank-badge.rank-3 { background: #4e4e6a; color: #ffffff; }
 
 .rec-summary-text {
-  font-size: 0.88rem;
+  font-size: 0.9rem;
   color: var(--gray-700);
-  line-height: 1.6;
-  margin: 10px 0 16px 0;
-  padding: 12px 16px;
+  line-height: 1.65;
+  margin: 12px 0 18px 0;
+  padding: 14px 18px;
   background: var(--green-50);
   border-radius: var(--radius-sm);
   border-left: 3px solid var(--green-300);
 }
+.rec-card-v2.rank-1 .rec-summary-text {
+  font-size: 0.92rem;
+  background: linear-gradient(90deg, rgba(118,196,66,0.08) 0%, rgba(118,196,66,0.03) 100%);
+  border-left: 4px solid var(--green-500);
+}
 
 .rec-yield-big {
-  font-size: 2.8rem;
+  font-size: 3.2rem;
   font-weight: 900;
   color: var(--gray-900);
   line-height: 1;
   letter-spacing: -0.03em;
 }
-.rec-yield-unit { font-size: 0.8rem; color: var(--gray-700); font-weight: 500; }
+.rec-card-v2.rank-1 .rec-yield-big { font-size: 3.6rem; color: #1a5c38; }
+.rec-yield-unit { font-size: 0.82rem; color: var(--gray-700); font-weight: 500; }
 .rec-yield-range { font-size: 0.78rem; color: var(--gray-700); margin-top: 4px; }
 .rec-yield-interval {
   font-size: 0.78rem;
@@ -1571,6 +1590,63 @@ div[data-baseweb="notification"] span {
 [data-testid="stMarkdownContainer"] + [data-testid="stExpander"],
 [data-testid="stMarkdownContainer"] + div[data-testid="stHorizontalBlock"] {
   margin-top: 4px !important;
+}
+
+/* ── Sidebar collapse/expand button — always visible and styled ── */
+[data-testid="collapsedControl"] {
+  display: flex !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  position: fixed !important;
+  top: 50% !important;
+  left: 0 !important;
+  transform: translateY(-50%) !important;
+  z-index: 99999 !important;
+  background: linear-gradient(180deg, #1a5c38 0%, #0d2b18 100%) !important;
+  border-radius: 0 10px 10px 0 !important;
+  box-shadow: 3px 0 14px rgba(0,0,0,0.30) !important;
+  padding: 12px 5px !important;
+  min-height: 52px !important;
+  min-width: 24px !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+}
+[data-testid="collapsedControl"]:hover {
+  background: linear-gradient(180deg, #2d8a56 0%, #1a5c38 100%) !important;
+  box-shadow: 4px 0 18px rgba(0,0,0,0.40) !important;
+}
+[data-testid="collapsedControl"] button {
+  background: transparent !important;
+  border: none !important;
+  color: rgba(255,255,255,0.92) !important;
+  padding: 0 !important;
+}
+[data-testid="collapsedControl"] svg,
+[data-testid="collapsedControl"] button svg {
+  fill: rgba(255,255,255,0.92) !important;
+  color: rgba(255,255,255,0.92) !important;
+}
+/* Sidebar open — collapse button (the arrow to close it) */
+[data-testid="stSidebarCollapseButton"] button {
+  background: transparent !important;
+  border: none !important;
+  color: rgba(255,255,255,0.55) !important;
+}
+[data-testid="stSidebarCollapseButton"] button:hover {
+  color: rgba(255,255,255,0.95) !important;
+  background: rgba(255,255,255,0.08) !important;
+}
+[data-testid="stSidebarCollapseButton"] svg {
+  fill: rgba(255,255,255,0.55) !important;
+}
+[data-testid="stSidebarCollapseButton"] button:hover svg {
+  fill: rgba(255,255,255,0.95) !important;
+}
+
+/* ── Language toggle — esconde os botões nativos, mantém clicáveis via JS ── */
+[data-testid="stSidebar"] [data-testid="stHorizontalBlock"] {
+  display: none !important;
 }
 
 /* ── Responsive ── */

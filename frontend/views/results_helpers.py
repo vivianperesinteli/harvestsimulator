@@ -1,4 +1,4 @@
-"""Constantes e geradores de texto compartilhados pela página de resultados."""
+"""Shared constants and text generators for the results page."""
 
 from __future__ import annotations
 
@@ -44,7 +44,7 @@ _CRITERIA_LABELS = {
 
 
 def _pdf_safe(text: str) -> str:
-    """Substitui caracteres fora do Latin-1 para o fpdf2 não quebrar."""
+    """Replace characters outside Latin-1 so fpdf2 does not raise an encoding error."""
     return (str(text)
         .replace("–", "-")
         .replace("—", "-")

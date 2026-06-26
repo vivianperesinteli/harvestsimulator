@@ -1,4 +1,4 @@
-"""Geração de PDF para a página de resultados."""
+"""PDF generation for the results page."""
 
 from __future__ import annotations
 from datetime import datetime

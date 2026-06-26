@@ -1,4 +1,4 @@
-"""Autenticação simples baseada em arquivo — sem dependências externas."""
+"""Simple file-based authentication — no external dependencies."""
 
 import hashlib
 import hmac
@@ -45,14 +45,14 @@ def _save(users: dict) -> None:
 
 
 def _hash(password: str) -> str:
-    """Gera hash seguro com PBKDF2-SHA256 + salt aleatório."""
+    """Generate a secure PBKDF2-SHA256 hash with a random salt."""
     salt = secrets.token_hex(16)
     dk = hashlib.pbkdf2_hmac("sha256", password.encode(), salt.encode(), 260_000)
     return f"pbkdf2:{salt}:{dk.hex()}"
 
 
 def _verify(password: str, stored: str) -> bool:
-    """Verifica senha contra hash armazenado (suporta pbkdf2, sha256: prefixado e sha256 puro legado)."""
+    """Verify a password against its stored hash (supports pbkdf2, sha256: prefixed, and legacy plain sha256)."""
     if stored.startswith("pbkdf2:"):
         _, salt, dk_hex = stored.split(":", 2)
         dk = hashlib.pbkdf2_hmac("sha256", password.encode(), salt.encode(), 260_000)
